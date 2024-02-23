@@ -1,0 +1,267 @@
+---
+title: "Use Cases for the Cry and rgl packages: SAED, Crystal Structure Visualization, and PXRD Pattern Simulation"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+bibliography: references.bib
+citation_package: natbib
+biblio-style: apalike
+vignette: >
+  %\VignetteIndexEntry{Use case for the cry and rgl packages}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+<!-- ------------------------------------------------------------ -->
+
+```{r setup, include=FALSE}
+library(knitr)
+## opts_knit$set(global.par = TRUE) #
+## par(mar=c(2,2,2,2))
+library(rgl)
+library(rgl.cry)
+options(rgl.useNULL = TRUE) # suppress window display
+setupKnitr(autoprint = FALSE) # for settings to override mouse callback
+opts_chunk$set(
+  echo = FALSE, error = FALSE, warning = FALSE, message = FALSE,
+  fig.path = "images/"
+)
+## opts_chunk$set(cache=TRUE)
+knit_hooks$set(webgl = hook_webgl)
+setupKnitr(autoprint = FALSE) # for settings to override mouse callback
+```
+
+<!-- ------------------------------------------------------------ -->
+# rgl.cry
+
+This package provides tools for selected area electron diffraction (SAED) pattern and crystal structure visualization by using ``rgl`` and ``cry`` packages.
+In particular ``cry_demo()`` and ``dp_demo()`` read a file in CIF formats (Crystallographic Information Framework) and display SAED pattern and crystal structure.
+The function ``dp_demo()`` also performs simple simulation of powder X-ray diffraction (PXRD) pattern and it can be saved the results to a file in the working directory.
+
+The package has been tested on several platforms, including Linux on Crostini with a Core™ m3-8100Y Chromebook, I found that even on this low-powered platform, the performance was acceptable.
+
+
+<!-- ------------------------------------------------------------ -->
+## Installation
+```{r, eval=FALSE, echo=TRUE}
+install.packages("rgl.cry")
+```
+
+
+<!-- ------------------------------------------------------------ -->
+## Example
+
+A CIF file is read. A reciprocal lattice map with a cell widget drawn.
+In this example, a file is not specified.  Therefore, a system default is used.
+```{r, eval=FALSE, echo=TRUE}
+dp_demo()
+```
+
+A CIF file is read. A crystal structure with a axis widget drawn.
+```{r, eval=FALSE, echo=TRUE}
+cry_demo()
+```
+
+The following is the working snapshot.
+Note that while this WebGL graphics is interactive, the behavior is simulated using JavaScript instead of processing in actual R.
+
+<div style="display: flex; justify-content: space-around; margin: none;">
+<!--
+<img width="35%" src="{{site.baseurl | prepend: site.url}}/images/dp_demo.png" alt="dp_demo() snapshot" />
+<img width="35%" src="{{site.baseurl | prepend: site.url}}/images/cry_demo.png" alt="dp_demo() snapshot" />
+ -->
+
+```{r}
+## first figure
+null <- dp_demo()
+
+dp.panel.id <- subsceneInfo()$id
+dp.widget.id <- subsceneInfo()$parent
+useSubscene3d(dp.widget.id)
+dp.root.id <- subsceneInfo()$parent
+useSubscene3d(dp.panel.id)
+## 26 15 7
+
+js1 <- readLines("cb_dp.js")
+js1 <- sub("%subidPanel%", dp.panel.id, js1)
+js1 <- sub("%subidWidget%", dp.widget.id, js1)
+js1 <- sub("%subidRoot%", dp.root.id, js1)
+js1 <- sub("%begin%", "begin1", js1)
+js1 <- sub("%update%", "update1", js1)
+js1 <- sub("%end%", "end1", js1)
+
+pop3d(tag = c("rlpoints0", "rlpoints2"))
+objIds <- rgl::ids3d(tag = TRUE, subscene = 0)
+objIds <- objIds[(objIds$tag == "rlpoints1"), ]$id
+js1 <- sub("%idpoints%", objIds, js1)
+
+scene1 <- setUserCallbacks("left",
+  begin = "begin1",
+  update = "update1",
+  end = "end1",
+  scene = scene3d(minimal = FALSE),
+  subscene = dp.panel.id,
+  applyToScene = TRUE,
+  applyToDev = FALSE,
+  javascript = js1
+)
+
+rglwidget(scene1, width = 0.4 * figWidth(), height = 0.4 * figWidth())
+
+## second figure
+null <- cry_demo()
+
+cry.panel.id <- subsceneInfo()$id
+cry.widget.id <- subsceneInfo()$parent
+useSubscene3d(cry.widget.id)
+cry.root.id <- subsceneInfo()$parent
+useSubscene3d(cry.panel.id)
+
+js2 <- readLines("cb_cry.js")
+js2 <- sub("%subidPanel%", cry.panel.id, js2)
+js2 <- sub("%subidWidget%", cry.widget.id, js2)
+js2 <- sub("%subidRoot%", cry.root.id, js2)
+js2 <- sub("%begin%", "begin2", js2)
+js2 <- sub("%update%", "update2", js2)
+js2 <- sub("%end%", "end2", js2)
+
+scene2 <- setUserCallbacks("left",
+  begin = "begin2",
+  update = "update2",
+  end = "end2",
+  scene = scene3d(minimal = FALSE),
+  subscene = cry.panel.id,
+  applyToScene = TRUE,
+  applyToDev = FALSE,
+  javascript = js2
+)
+
+rglwidget(width = 0.4 * figWidth(), height = 0.4 * figWidth())
+##rglwidget(scene2, width = 0.4 * figWidth(), height = 0.4 * figWidth())
+```
+</div>
+
+
+<!-- ------------------------------ -->
+### Utility functions
+
+The crystal and diffraction pattern are aligned and displayed.
+```{r, eval=FALSE, echo=TRUE}
+align("a")
+align("c*")
+align("30 30") # x, y (deg)
+```
+
+Select one or more atoms or reciprocal lattice points in the window.
+The labels and Miller indices of the selected atoms or lattice points will be displayed.
+```{r, eval=FALSE, echo=TRUE}
+> dp_demo()
+[1] 1
+> select()
+To select points, use dragging the left mouse button.
+To finish, press ESC.
+.
+1 0 -2
+1 0 0
+1 0 2
+
+> cry_demo()
+[1] 2
+> select()
+To select points, use dragging the left mouse button.
+To finish, press ESC.
+...
+O3 
+O3 
+```
+
+
+<!-- ------------------------------ -->
+### Extras
+``dp_demo()`` can perform PXRD pattern simulation.
+The result is putted as a file on the current directory by specifying options like this:
+```{r, eval=FALSE, echo=TRUE}
+## Output the simulation results of the PXDR pattern as a file.
+dp_demo(xrd = TRUE)
+```
+The file looks like this:
+```zsh
+% sort -n +7 rgl.cry.dp.demo.2024-02-26_000000.dat
+     h  k  l        d       absF         lp twotheta
+137  0  0  0      Inf 308.117522        Inf  0.00000
+136 -1  0  0 5.583222  17.389409 101.955123 15.87322
+138  1  0  0 5.583222  17.389409 101.955123 15.87322
+128  0 -2  0 4.453238  40.628676  63.820476 19.93782
+146  0  2  0 4.453238  40.628676  63.820476 19.93782
+129  1 -2  0 4.142661  17.444203  54.849532 21.44963
+145 -1  2  0 4.142661  17.444203  54.849532 21.44963
+```
+
+You can plot the data as follows:
+
+```{r, echo=TRUE, fig.asp=0.5, out.width="90%", fig.align="center", fig.cap=""}
+df <- read.table(
+  file = "data/rgl.cry.dp.demo.2024-02-26_000000.dat",
+  header = TRUE,
+  sep = "",
+  comment.char = "#",
+  blank.lines.skip = TRUE,
+  skipNul = TRUE)
+
+df <- df[-which(df$absF == 0 | df$d == Inf | df$twotheta == 0), ]
+
+df2 <- data.frame(twotheta = df$twotheta, I = (df$lp * df$absF^2))
+df2 <- aggregate(df2$I, by = list(df2$twotheta), sum)
+names(df2) <- c("twotheta", "I")
+df2 <- data.frame(twotheta = df2$twotheta, I = 100 * df2$I / max(df2$I))
+
+plot(df2,
+  xlim = c(10, 80), ylim = c(0, 105), type = "p", cex = 0.02, xaxs = "i", yaxs = "r",
+  xlab = "", ylab = ""
+)
+mtext(~ italic("2θ"), side = 1, line = 3)
+mtext(~ italic("I"), side = 2, line = 3)
+segments(x0 = df2$twotheta, y0 = 0, x1 = df2$twotheta, y1 = df2$I)
+```
+
+In the above plot, a line is drawn perpendicular to the expected intensity at the angle at which diffraction occurs.
+Even if there is multiple diffraction data at the same position, they are not added together.
+On the other hand, the following plot is a distribution curve rather than a straight line so that it has values even around the diffraction angle, and all the diffraction intensities are added together and displayed.
+
+```{r, echo=TRUE, fig.asp=0.5, out.width="90%", fig.align="center", fig.cap=""}
+f1 <- function(x) { # pseudo-Voigt function
+  w <- 0.005 # hwhm (= fwhm/2)
+  r <- 0.01 # ratio of Lorentzian and Gaussian
+  sum(apply(df2, 1, function(v) {
+    h <- v["I"]
+    t <- v["twotheta"]
+    (h * ((1 - r) * exp(-log(2) * ((x - t) / w)**2) + r / (1 + ((x - t) / w)**2)))
+  }))
+}
+
+x <- do.call(c, sapply(df2$twotheta, function(v) {
+  list(v - 0.02, v - 0.01, v, v + 0.01, v + 0.02)
+}))
+
+df3 <- data.frame(twotheta = x, I = sapply(x, f1))
+df3 <- data.frame(twotheta = df3$twotheta, I = 100 * df3$I / max(df3$I))
+
+plot(df3,
+  xlim = c(10, 80), ylim = c(0, 105), type = "l", xaxs = "i", yaxs = "r",
+  xlab = "", ylab = ""
+)
+mtext(~ italic("2θ"), side = 1, line = 3)
+mtext(~ italic("I"), side = 2, line = 3)
+```
+
+
+<!-- ------------------------------------------------------------ -->
+
+## References
+
+<div id="refs"></div>
+
+## Acknowledgment
+
+I would like to express my gratitude to the rgl, cry packages, and R for making this work possible.  The data for the scattering factors is based on the data from the KEK Report @sc_table_kek.  For the coloring of the atoms, I used @mol_color, and for the atomic radii, I used @enwiki:1179864711.
