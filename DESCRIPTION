@@ -27,3 +27,4 @@ Suggests:
 Config/testthat/edition: 3
 VignetteBuilder: knitr
 URL: https://github.com/SaitouToshihide/rgl.cry, https://saitoutoshihide.github.io/rgl.cry
+Language: en-US
