@@ -5,7 +5,7 @@
 #' Examples of using the cry and rgl packages together.
 #'
 #' Read a file in CIF formats, set the parameters, calculates them, and draws
-#' the crystal structure with an asxis widget.
+#' the crystal structure with an axis widget.
 #'
 #' If no file argument is provided, and `dp_demo()` has been opened without
 #' paired `cry_demo()`, the CIF parameters of already opened `dp_demo()` will be

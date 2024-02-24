@@ -8,6 +8,14 @@
 \description{
 Visualizing crystal structures and electron diffraction patterns. It provides functions cry_demo() and dp_demo() to load a file in CIF formats (Crystallographic Information Framework) and display crystal structure and electron diffraction pattern. The function dp_demo() also performs powder diffraction simulation and saves the results to a file in the working directory. The package has been tested on several platforms, including Linux on Crostini with a Core™ m3-8100Y Chromebook, I found that even on this low-powered platform, the performance was acceptable.
 }
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://github.com/SaitouToshihide/rgl.cry/}
+  \item \url{https://saitoutoshihide.github.io/rgl.cry/}
+}
+
+}
 \author{
 \strong{Maintainer}: Toshihide Saitou \email{saitou.toshihide@gmail.com}
 

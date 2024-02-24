@@ -19,7 +19,7 @@ but ball-stick is not implemented.}
 }
 \description{
 Read a file in CIF formats, set the parameters, calculates them, and draws
-the crystal structure with an asxis widget.
+the crystal structure with an axis widget.
 }
 \details{
 If no file argument is provided, and \code{dp_demo()} has been opened without
