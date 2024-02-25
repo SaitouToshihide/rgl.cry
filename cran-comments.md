@@ -14,3 +14,9 @@
 * win-builder: x86_64-w64-mingw32
 
          Status: 1 NOTE
+
+
+## revdepcheck results
+
+This is the first release.
+
