@@ -88,9 +88,10 @@ select <- function(dev = NULL) {
 
     ## Reports
     hkl <- inst[[idx, "hkl"]]
-    i <- selection[, "index"]
-    apply(hkl[i, ], 1, function(v) {
-      cat(sprintf("%s %s %s\n", v["H"], v["K"], v["L"]))
+    i <- selection[, "index"] # id, index (all ids are the same)
+    i <- as.numeric(i)
+    ret <- sapply(i, function(j) {
+      sprintf("%s %s %s", hkl[j, "H"], hkl[j, "K"], hkl[j, "L"])
     })
   } else if (type == "cry") {
     ## Limit objects to select.
@@ -123,10 +124,13 @@ select <- function(dev = NULL) {
 
     ## Reports
     lCIF <- inst[[idx, "lCIF"]]
-    for (i in seq_len(dim(selection)[1])) {
-      j <- which(objIds$id == selection[i, ][1])
-      cat(lCIF$COOR$VAL[j, "label"], "\n")
-    }
+    ids <- unique(sort(objIds$id))
+    i <- selection[, "id"] # id, index (id corresponds to atom)
+    i <- as.numeric(i)
+    ret <- sapply(i, function(j) {
+      sprintf("%s", lCIF$COOR$VAL[which(ids == j), "label"])
+    })
+
     ## print(objIds)
     ## print(selection)
     ## print(lCIF$COOR$VAL[1, "label"])
