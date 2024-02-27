@@ -9,9 +9,11 @@
 #' @param dev The device that is used to extract the lCIF.  The default is
 #' current device.
 #'
+#' @return A named list, the same as that of 'cry::readCIF.'
+#'
 #' @export
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' getCIF()
 #' }
 getCIF <- function(dev = NULL) {

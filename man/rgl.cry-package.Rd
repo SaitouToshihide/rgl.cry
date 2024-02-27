@@ -4,9 +4,9 @@
 \name{rgl.cry-package}
 \alias{rgl.cry}
 \alias{rgl.cry-package}
-\title{rgl.cry: Use Cases for the Cry and rgl packages: SAED, Crystal Structure Visualization, and PXRD Pattern Simulation}
+\title{rgl.cry: 'cry' and 'rgl' — Applications in Crystallography}
 \description{
-Visualizing crystal structures and electron diffraction patterns. It provides functions cry_demo() and dp_demo() to load a file in CIF formats (Crystallographic Information Framework) and display crystal structure and electron diffraction pattern. The function dp_demo() also performs powder diffraction simulation and saves the results to a file in the working directory. The package has been tested on several platforms, including Linux on Crostini with a Core™ m3-8100Y Chromebook, I found that even on this low-powered platform, the performance was acceptable.
+Visualizing crystal structures and selected area electron diffraction (SAED) patterns. It provides functions cry_demo() and dp_demo() to load a file in 'CIF' (Crystallographic Information Framework) formats and display crystal structures and electron diffraction patterns. The function dp_demo() also performs simple simulation of powder X-ray diffraction (PXRD) patterns, and the results can be saved to a file in the working directory. The package has been tested on several platforms, including Linux on 'Crostini' with a Core™ m3-8100Y Chromebook, I found that even on this low-powered platform, the performance was acceptable. T. Hanashima (2001) \url{https://www2.kek.jp/imss/pf/tools/sasaki/sinram/sinram.html} Todd Helmenstine (2019) \url{https://sciencenotes.org/molecule-atom-colors-cpk-colors/} Wikipedia contributors (2023) \url{https://en.wikipedia.org/w/index.php?title=Atomic_radius&oldid=1179864711}.
 }
 \seealso{
 Useful links:
@@ -17,7 +17,7 @@ Useful links:
 
 }
 \author{
-\strong{Maintainer}: Toshihide Saitou \email{saitou.toshihide@gmail.com}
+\strong{Maintainer}: Toshihide Saitou \email{saitou.toshihide@gmail.com} [copyright holder]
 
 }
 \keyword{internal}

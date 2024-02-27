@@ -10,11 +10,14 @@ getCIF(dev = NULL)
 \item{dev}{The device that is used to extract the lCIF.  The default is
 current device.}
 }
+\value{
+A named list, the same as that of 'cry::readCIF.'
+}
 \description{
 Output a lCIF.
 }
 \examples{
-\dontrun{
+\donttest{
 getCIF()
 }
 }

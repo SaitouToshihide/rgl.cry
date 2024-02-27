@@ -16,11 +16,13 @@ value.}
 
 \item{ews.r}{Ewald sphere radius in angstrom.}
 
-\item{zoom}{A positive value indicating the current magnification of the}
+\item{zoom}{A positive value indicating the current scene magnification.}
 
-\item{xrd}{A logical value indicating whether X-ray diffraction pattern
-simulation result file create.
-scene.}
+\item{xrd}{A logical value indicating whether to create an X-ray diffraction
+pattern simulation result file.}
+}
+\value{
+An integer the device number of the currently window.
 }
 \description{
 Read a file in CIF formats, set and the parameters, calculates them, draws
@@ -43,8 +45,10 @@ for atomic ionization and uses standard atomic scattering factors.
 dp_demo()
 dp_demo(system.file("orthorhombic_p.cif", package = "rgl.cry"))
 
-\dontrun{
-dp_demo(file, zoom = 0.5)
-dp_demo("https://www.crystallography.net/cod/foo.cif")
+\donttest{
+if (interactive()) {
+ dp_demo(file, zoom = 0.5)
+ dp_demo("https://www.crystallography.net/cod/foo.cif")
+}
 }
 }

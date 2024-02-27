@@ -1,5 +1,5 @@
 ---
-title: "Use Cases for the Cry and rgl packages: SAED, Crystal Structure Visualization, and PXRD Pattern Simulation"
+title: "cry and rgl — Applications in Crystallography"
 output:
   html_document:
     toc: true
@@ -35,9 +35,10 @@ setupKnitr(autoprint = FALSE) # for settings to override mouse callback
 <!-- ------------------------------------------------------------ -->
 # rgl.cry
 
-This package provides tools for selected area electron diffraction (SAED) pattern and crystal structure visualization by using ``rgl`` and ``cry`` packages.
-In particular ``cry_demo()`` and ``dp_demo()`` read a file in CIF formats (Crystallographic Information Framework) and display SAED pattern and crystal structure.
-The function ``dp_demo()`` also performs simple simulation of powder X-ray diffraction (PXRD) pattern and it can be saved the results to a file in the working directory.
+This is a use case for the ``cry`` and ``rgl`` packages.
+This package provides tools for selected area electron diffraction (SAED) pattern and crystal structure visualization using the ``rgl`` and ``cry`` packages.
+In particular, the ``cry_demo()`` and ``dp_demo()`` function read files in CIF (Crystallographic Information Framework) format and display SAED patterns and crystal structures.
+The ``dp_demo()`` function also performs simple simulations of powder X-ray diffraction (PXRD) patterns, and the results can be saved to a file in the working directory.
 
 The package has been tested on several platforms, including Linux on Crostini with a Core™ m3-8100Y Chromebook, I found that even on this low-powered platform, the performance was acceptable.
 
@@ -52,21 +53,21 @@ install.packages("rgl.cry")
 <!-- ------------------------------------------------------------ -->
 ## Example
 
-A CIF file is read. A reciprocal lattice map with a cell widget drawn.
-In this example, a file is not specified.  Therefore, a system default is used.
+A CIF file is read, and a reciprocal lattice map with a cell widget is drawn.
+In this example, a file is not specified, so the system default is used.
 ```{r, eval=FALSE, echo=TRUE}
 dp_demo()
 ```
 
-A CIF file is read. A crystal structure with a axis widget drawn.
+A CIF file is read, and a crystal structure with a axis widget is drawn.
 ```{r, eval=FALSE, echo=TRUE}
 cry_demo()
 ```
 
-The following is the working snapshot.
-Note that while this WebGL graphics is interactive, the behavior is simulated using JavaScript instead of processing in actual R.
+The following is a working snapshot.
+Note that while this WebGL graphics is interactive, the behavior is simulated using JavaScript instead of being processed in actual R.
 
-<div style="display: flex; justify-content: space-around; margin: none;">
+<div style="margin: 5% 5%; display: flex; justify-content: space-around; margin: none;">
 <!--
 <img width="35%" src="{{site.baseurl | prepend: site.url}}/images/dp_demo.png" alt="dp_demo() snapshot" />
 <img width="35%" src="{{site.baseurl | prepend: site.url}}/images/cry_demo.png" alt="dp_demo() snapshot" />
@@ -107,7 +108,7 @@ scene1 <- setUserCallbacks("left",
   javascript = js1
 )
 
-rglwidget(scene1, width = 0.4 * figWidth(), height = 0.4 * figWidth())
+rglwidget(scene1, width = 0.3 * figWidth(), height = 0.3 * figWidth())
 
 ## second figure
 null <- cry_demo()
@@ -137,8 +138,8 @@ scene2 <- setUserCallbacks("left",
   javascript = js2
 )
 
-rglwidget(width = 0.4 * figWidth(), height = 0.4 * figWidth())
-##rglwidget(scene2, width = 0.4 * figWidth(), height = 0.4 * figWidth())
+rglwidget(width = 0.3 * figWidth(), height = 0.3 * figWidth())
+##rglwidget(scene2, width = 0.3 * figWidth(), height = 0.3 * figWidth())
 ```
 </div>
 
@@ -159,7 +160,7 @@ The labels and Miller indices of the selected atoms or lattice points will be di
 > dp_demo()
 [1] 1
 > select()
-To select points, use dragging the left mouse button.
+To select points, drag the left mouse button.
 To finish, press ESC.
 .
 1 0 -2
@@ -169,7 +170,7 @@ To finish, press ESC.
 > cry_demo()
 [1] 2
 > select()
-To select points, use dragging the left mouse button.
+To select points, drag the left mouse button.
 To finish, press ESC.
 ...
 O3 
@@ -180,7 +181,7 @@ O3
 <!-- ------------------------------ -->
 ### Extras
 ``dp_demo()`` can perform PXRD pattern simulation.
-The result is putted as a file on the current directory by specifying options like this:
+The result is saved as a file in the current directory by specifying options like this:
 ```{r, eval=FALSE, echo=TRUE}
 ## Output the simulation results of the PXDR pattern as a file.
 dp_demo(xrd = TRUE)
@@ -230,10 +231,10 @@ Even if there is multiple diffraction data at the same position, they are not ad
 On the other hand, the following plot is a distribution curve rather than a straight line so that it has values even around the diffraction angle, and all the diffraction intensities are added together and displayed.
 
 ```{r, echo=TRUE, fig.asp=0.5, out.width="90%", fig.align="center", fig.cap=""}
-f1 <- function(x) { # pseudo-Voigt function
-  w <- 0.005 # hwhm (= fwhm/2)
+f1 <- function(x) {
+  w <- 0.02 # hwhm (= fwhm/2)
   r <- 0.01 # ratio of Lorentzian and Gaussian
-  sum(apply(df2, 1, function(v) {
+  sum(apply(df2, 1, function(v) { # sum of pseudo-Voigt functions at each position
     h <- v["I"]
     t <- v["twotheta"]
     (h * ((1 - r) * exp(-log(2) * ((x - t) / w)**2) + r / (1 + ((x - t) / w)**2)))
@@ -241,8 +242,9 @@ f1 <- function(x) { # pseudo-Voigt function
 }
 
 x <- do.call(c, sapply(df2$twotheta, function(v) {
-  list(v - 0.02, v - 0.01, v, v + 0.01, v + 0.02)
+  as.list(seq(v - 3, v + 3, 0.2)) # A smaller list length result in shorter calculation time.
 }))
+x <- unique(sort(x))
 
 df3 <- data.frame(twotheta = x, I = sapply(x, f1))
 df3 <- data.frame(twotheta = df3$twotheta, I = 100 * df3$I / max(df3$I))

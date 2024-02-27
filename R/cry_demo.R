@@ -18,15 +18,19 @@
 #' but ball-stick is not implemented.
 #' @param zoom A positive value indicating the current scene magnification.
 #'
+#' @return An integer the device number of the currently window.
+#'
 #' @export
 #'
 #' @examples
 #' cry_demo()
 #' cry_demo(system.file("orthorhombic_p.cif", package = "rgl.cry"))
 #'
-#' \dontrun{
-#' cry_demo(file, type = "fill", zoom = 0.5)
-#' cry_demo("https://www.crystallography.net/cod/foo.cif")
+#' \donttest{
+#' if (interactive()) {
+#'  cry_demo(file, type = "fill", zoom = 0.5)
+#'  cry_demo("https://www.crystallography.net/cod/foo.cif")
+#' }
 #' }
 cry_demo <- function(file = NULL, rf = 1, type = "b", zoom = 1) {
   list(file = file, rf = rf, type = type, zoom = zoom)

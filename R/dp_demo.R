@@ -25,10 +25,11 @@
 #' of lattice points, you can expect to improve performance by increasing the
 #' value.
 #' @param ews.r Ewald sphere radius in angstrom.
-#' @param zoom A positive value indicating the current magnification of the
-#' @param xrd A logical value indicating whether X-ray diffraction pattern
-#' simulation result file create.
-#' scene.
+#' @param zoom A positive value indicating the current scene magnification.
+#' @param xrd A logical value indicating whether to create an X-ray diffraction
+#' pattern simulation result file.
+#'
+#' @return An integer the device number of the currently window.
 #'
 #' @export
 #'
@@ -36,12 +37,14 @@
 #' dp_demo()
 #' dp_demo(system.file("orthorhombic_p.cif", package = "rgl.cry"))
 #'
-#' \dontrun{
-#' dp_demo(file, zoom = 0.5)
-#' dp_demo("https://www.crystallography.net/cod/foo.cif")
+#' \donttest{
+#' if (interactive()) {
+#'  dp_demo(file, zoom = 0.5)
+#'  dp_demo("https://www.crystallography.net/cod/foo.cif")
+#' }
 #' }
 dp_demo <- function(file = NULL, reso = 1.2, ews.r = 37, zoom = 0.5, xrd = FALSE) {
-  list(file = file, reso = reso, ews.r = ews.r, zoom = zoom, xrd = FALSE)
+  list(file = file, reso = reso, ews.r = ews.r, zoom = zoom, xrd = xrd)
 
   ## File or lCIF object to use.
   if (!is.null(file)) {
@@ -677,9 +680,12 @@ dp_demo <- function(file = NULL, reso = 1.2, ews.r = 37, zoom = 0.5, xrd = FALSE
 
 
 #' @noRd
-.makeFittedAtomicScatteringFactor <- function() {
+.makeFittedAtomicScatteringFactor <- function(save = FALSE) {
+
+  list(save = save)
+
   ScatFac <- list()
-  files <- list("H~0.txt", "HE~0.txt", "LI~0.txt", "LI~p1.txt", "BE~0.txt", "BE~p2.txt", "B~0.txt", "B~p2.txt", "B~p3.txt", "C~0.txt", "N~0.txt", "O~0.txt", "O~m1.txt", "O~m2.txt", "O~m1.9.txt", "O~m1.4.txt", "F~0.txt", "F~m1.txt", "NE~0.txt", "NA~0.txt", "NA~p1.txt", "MG~0.txt", "MG~p1.txt", "MG~p2.txt", "MG~p1.9.txt", "AL~0.txt", "AL~p1.txt", "AL~p2.txt", "AL~p3.txt", "SI~0.txt", "SI~p1.txt", "SI~p2.txt", "SI~p3.txt", "SI~p4.txt", "P~0.txt", "S~0.txt", "S~m1.txt", "CL~0.txt", "CL~m1.txt", "AR~0.txt", "K~0.txt", "K~p1.txt", "CA~0.txt", "CA~p1.txt", "CA~p2.txt", "SC~0.txt", "SC~p1.txt", "SC~p3.txt", "TI~0.txt", "TI~p2.txt", "TI~p3.txt", "TI~p4.txt", "V~0.txt", "V~p2.txt", "V~p3.txt", "V~p5.txt", "CR~0.txt", "CR~p2.txt", "CR~p3.txt", "MN~0.txt", "MN~p1.txt", "MN~p2.txt", "MN~p3.txt", "MN~p4.txt", "FE~0.txt", "FE~p1.txt", "FE~p2.txt", "FE~p3.txt", "CO~0.txt", "CO~p1.txt", "CO~p2.txt", "CO~p3.txt", "CO~p1.2.txt", "NI~0.txt", "NI~p1.txt", "NI~p2.txt", "NI~p3.txt", "NI~p0.7.txt", "CU~0.txt", "CU~p1.txt", "CU~p2.txt", "ZN~0.txt", "ZN~p2.txt", "GA~0.txt", "GA~p3.txt", "GE~0.txt", "GE~p4.txt", "AS~0.txt", "SE~0.txt", "BR~0.txt", "BR~m1.txt", "KR~0.txt", "RB~0.txt", "RB~p1.txt", "SR~0.txt", "SR~p2.txt", "Y~0.txt", "Y~p3.txt", "ZR~0.txt", "ZR~p4.txt", "NB~0.txt", "NB~p3.txt", "NB~p5.txt", "MO~0.txt", "MO~p3.txt", "MO~p5.txt", "TC~0.txt", "RU~0.txt", "RH~0.txt", "PD~0.txt", "AG~0.txt", "AG~p1.txt", "CD~0.txt", "CD~p2.txt", "IN~0.txt", "IN~p3.txt", "SN~0.txt", "SN~p2.txt", "SB~0.txt", "SB~p3.txt", "TE~0.txt", "I~0.txt", "I~m1.txt", "XE~0.txt", "CS~0.txt", "CS~p1.txt", "BA~0.txt", "BA~p2.txt", "LA~0.txt", "CE~0.txt", "PR~0.txt", "ND~0.txt", "PM~0.txt", "SM~0.txt", "EU~0.txt", "GD~0.txt", "GD~p3.txt", "TB~0.txt", "DY~0.txt", "HO~0.txt", "ER~0.txt", "ER~p3.txt", "TM~0.txt", "YB~0.txt", "LU~0.txt", "HF~0.txt", "TA~0.txt", "W~0.txt", "W~p6.txt", "RE~0.txt", "OS~0.txt", "IR~0.txt", "PT~0.txt", "PT~p2.txt", "PT~p4.txt", "AU~0.txt", "AU~p1.txt", "AU~p3.txt", "HG~0.txt", "HG~p1.txt", "HG~p2.txt", "TL~0.txt", "PB~0.txt", "PB~p2.txt", "BI~0.txt", "BI~p3.txt", "U~0.txt", "U~p3.txt")
+  files <- list("H~0.txt", "HE~0.txt", "LI~0.txt", "LI~p1.txt", "BE~0.txt", "BE~p2.txt", "B~0.txt", "B~p2.txt", "B~p3.txt", "C~0.txt", "N~0.txt", "O~0.txt", "O~m1.txt", "O~m2.txt", "O~m1.9.txt", "O~m1.4.txt", "F~0.txt", "F~m1.txt", "NE~0.txt", "NA~0.txt", "NA~p1.txt", "MG~0.txt", "MG~p1.txt", "MG~p2.txt", "MG~p1.9.txt", "AL~0.txt", "AL~p1.txt", "AL~p2.txt", "AL~p3.txt", "SI~0.txt", "SI~p1.txt", "SI~p2.txt", "SI~p3.txt", "SI~p4.txt", "P~0.txt", "S~0.txt", "S~m1.txt", "CL~0.txt", "CL~m1.txt", "AR~0.txt", "K~0.txt", "K~p1.txt", "CA~0.txt", "CA~p1.txt", "CA~p2.txt", "SC~0.txt", "SC~p1.txt", "SC~p3.txt", "TI~0.txt", "TI~p2.txt", "TI~p3.txt", "TI~p4.txt", "V~0.txt", "V~p2.txt", "V~p3.txt", "V~p5.txt", "CR~0.txt", "CR~p2.txt", "CR~p3.txt", "MN~0.txt", "MN~p1.txt", "MN~p2.txt", "MN~p3.txt", "MN~p4.txt", "FE~0.txt", "FE~p1.txt", "FE~p2.txt", "FE~p3.txt", "CO~0.txt", "CO~p1.txt", "CO~p2.txt", "CO~p3.txt", "CO~p1.2.txt", "NI~0.txt", "NI~p1.txt", "NI~p2.txt", "NI~p3.txt", "NI~p0.7.txt", "CU~0.txt", "CU~p1.txt", "CU~p2.txt", "ZN~0.txt", "ZN~p2.txt", "GA~0.txt", "GA~p3.txt", "GE~0.txt", "GE~p4.txt", "AS~0.txt", "SE~0.txt", "BR~0.txt", "BR~m1.txt", "KR~0.txt", "RB~0.txt", "RB~p1.txt", "SR~0.txt", "SR~p2.txt", "Y~0.txt", "Y~p3.txt", "ZR~0.txt", "ZR~p4.txt", "NB~0.txt", "NB~p3.txt", "NB~p5.txt", "MO~0.txt", "MO~p3.txt", "MO~p5.txt", "TC~0.txt", "RU~0.txt", "RH~0.txt", "PD~0.txt", "AG~0.txt", "AG~p1.txt", "CD~0.txt", "CD~p2.txt", "IN~0.txt", "IN~p3.txt", "SN~0.txt", "SN~p2.txt", "SB~0.txt", "SB~p3.txt", "TE~0.txt", "I~0.txt", "I~m1.txt", "XE~0.txt", "CS~0.txt", "CS~p1.txt", "BA~0.txt", "BA~p2.txt", "LA~0.txt", "CE~0.txt", "PR~0.txt", "ND~0.txt", "PM~0.txt", "SM~0.txt", "EU~0.txt", "GD~0.txt", "GD~p3.txt", "TB~0.txt", "DY~0.txt", "HO~0.txt", "ER~0.txt", "ER~p3.txt", "TM~0.txt", "YB~0.txt", "LU~0.txt", "HF~0.txt", "TA~0.txt", "W~0.txt", "W~p6.txt", "RE~0.txt", "OS~0.txt", "IR~0.txt", "PT~0.txt", "PT~p2.txt", "PT~p4.txt", "AU~0.txt", "AU~p1.txt", "AU~p3.txt", "HG~0.txt", "HG~p1.txt", "HG~p2.txt", "TL~0.txt", "PB~0.txt", "PB~p2.txt", "BI~0.txt", "BI~p3.txt", "U~0.txt")
 
   for (i in files) {
     file <- paste0("../scattering_factors/data/", i)
@@ -697,9 +703,15 @@ dp_demo <- function(file = NULL, reso = 1.2, ews.r = 37, zoom = 0.5, xrd = FALSE
     ScatFac[[length(ScatFac) + 1]] <- stats::smooth.spline(df$s, df$f)
   }
 
-  names(ScatFac) <- c("H", "He", "Li", "Li+1", "Be", "Be+2", "B", "B+2", "B+3", "C", "N", "O", "O-1", "O-2", "O-1.9", "O-1.4", "F", "F-1", "Ne", "Na", "Na+1", "Mg", "Mg+1", "Mg+2", "Mg+1.9", "Al", "Al+1", "Al+2", "Al+3", "Si", "Si+1", "Si+2", "Si+3", "Si+4", "P", "S", "S-1", "Cl", "Cl-1", "Ar", "K", "K+1", "Ca", "Ca+1", "Ca+2", "Sc", "Sc+1", "Sc+3", "Ti", "Ti+2", "Ti+3", "Ti+4", "V", "V+2", "V+3", "V+5", "Cr", "Cr+2", "Cr+3", "Mn", "Mn+1", "Mn+2", "Mn+3", "Mn+4", "Fe", "Fe+1", "Fe+2", "Fe+3", "Co", "Co+1", "Co+2", "Co+3", "Co+1.2", "Ni", "Ni+1", "Ni+2", "Ni+3", "Ni+0.7", "Cu", "Cu+1", "Cu+2", "Zn", "Zn+2", "Ga", "Ga+3", "Ge", "Ge+4", "As", "Se", "Br", "Br-1", "Kr", "Rb", "Rb+1", "Sr", "Sr+2", "Y", "Y+3", "Zr", "Zr+4", "Nb", "Nb+3", "Nb+5", "Mo", "Mo+3", "Mo+5", "Tc", "Ru", "Rh", "Pd", "Ag", "Ag+1", "Cd", "Cd+2", "In", "In+3", "Sn", "Sn+2", "Sb", "Sb+3", "Te", "I", "I-1", "Xe", "Cs", "Cs+1", "Ba", "Ba+2", "La", "Ce", "Pr", "Nd", "Pm", "Sm", "Eu", "Gd", "Gd+3", "Tb", "Dy", "Ho", "Er", "Er+3", "Tm", "Yb", "Lu", "Hf", "Ta", "W", "W+6", "Re", "Os", "Ir", "Pt", "Pt+2", "Pt+4", "Au", "Au+1", "Au+3", "Hg", "Hg+1", "Hg+2", "Tl", "Pb", "Pb+2", "Bi", "Bi+3", "U", "U+3")
+  names(ScatFac) <- c("H", "He", "Li", "Li+1", "Be", "Be+2", "B", "B+2", "B+3", "C", "N", "O", "O-1", "O-2", "O-1.9", "O-1.4", "F", "F-1", "Ne", "Na", "Na+1", "Mg", "Mg+1", "Mg+2", "Mg+1.9", "Al", "Al+1", "Al+2", "Al+3", "Si", "Si+1", "Si+2", "Si+3", "Si+4", "P", "S", "S-1", "Cl", "Cl-1", "Ar", "K", "K+1", "Ca", "Ca+1", "Ca+2", "Sc", "Sc+1", "Sc+3", "Ti", "Ti+2", "Ti+3", "Ti+4", "V", "V+2", "V+3", "V+5", "Cr", "Cr+2", "Cr+3", "Mn", "Mn+1", "Mn+2", "Mn+3", "Mn+4", "Fe", "Fe+1", "Fe+2", "Fe+3", "Co", "Co+1", "Co+2", "Co+3", "Co+1.2", "Ni", "Ni+1", "Ni+2", "Ni+3", "Ni+0.7", "Cu", "Cu+1", "Cu+2", "Zn", "Zn+2", "Ga", "Ga+3", "Ge", "Ge+4", "As", "Se", "Br", "Br-1", "Kr", "Rb", "Rb+1", "Sr", "Sr+2", "Y", "Y+3", "Zr", "Zr+4", "Nb", "Nb+3", "Nb+5", "Mo", "Mo+3", "Mo+5", "Tc", "Ru", "Rh", "Pd", "Ag", "Ag+1", "Cd", "Cd+2", "In", "In+3", "Sn", "Sn+2", "Sb", "Sb+3", "Te", "I", "I-1", "Xe", "Cs", "Cs+1", "Ba", "Ba+2", "La", "Ce", "Pr", "Nd", "Pm", "Sm", "Eu", "Gd", "Gd+3", "Tb", "Dy", "Ho", "Er", "Er+3", "Tm", "Yb", "Lu", "Hf", "Ta", "W", "W+6", "Re", "Os", "Ir", "Pt", "Pt+2", "Pt+4", "Au", "Au+1", "Au+3", "Hg", "Hg+1", "Hg+2", "Tl", "Pb", "Pb+2", "Bi", "Bi+3", "U")
 
-  save(ScatFac, file = "inst/extdata/sc.Rda")
+  if (save == TRUE) {
+    scfile <- paste0(
+      "rgl.cry.dp.demo.Sc.",
+      format(Sys.time(), "%Y-%m-%d_%H%M%S.Rda")
+    )
+    save(ScatFac, file = scfile)
+  }
 }
 
 ## from [1, eq. 3.9]

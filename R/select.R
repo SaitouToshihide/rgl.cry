@@ -13,18 +13,22 @@
 #' need to modify the code.
 #'
 #' @param dev RGL device to apply.  Defaults to current device.
+#' @param verbose logical: Should the report be suppressed?
+#'
+#' @return List of Miller indices or element labels.
 #'
 #' @export
 #'
 #' @examples
+#' \donttest{
 #' if (interactive()) {
-#'   select()
+#'  select()
+#'  select(dev = 123)
 #' }
-#' \dontrun{
-#' select(dev = 123)
 #' }
-select <- function(dev = NULL) {
-  list(dev = dev)
+select <- function(dev = NULL, verbose = TRUE) {
+
+  list(dev = dev, verbose = verbose)
 
   ## Select device
   if (missing(dev)) {
@@ -41,8 +45,7 @@ select <- function(dev = NULL) {
   ## by length().
 
   if (length(idx) == 0) {
-    cat("Can not select because the device was lost.\n")
-    return(-1)
+    stop("The device was lost.\n")
   }
 
   if (length(idx <- which(inst$dp.dev == tgt.dev)) != 0) {
@@ -53,8 +56,10 @@ select <- function(dev = NULL) {
 
 
   ##
-  cat("To select points, use dragging the left mouse button.\n")
-  cat("To finish, press ESC.\n")
+  if (verbose == TRUE) {
+    message("To select points, drag the left mouse button.")
+    message("To finish, press ESC.")
+  }
 
 
 
@@ -79,12 +84,14 @@ select <- function(dev = NULL) {
         ## FALSE, otherwise coordinate of points.
         ## cat(sprintf("id, idx: %0.f, %0.f\n",
         ##            x[,"id"], x[,"index"]))
-        cat(".")
+        if (verbose == TRUE) {
+          message(".", appendLF=FALSE)
+        }
         ## spheres3d(x, radius = 0.05)
         TRUE
       }
     )
-    cat("\n")
+    if (verbose == TRUE) message()
 
     ## Reports
     hkl <- inst[[idx, "hkl"]]
@@ -106,12 +113,14 @@ select <- function(dev = NULL) {
         ## FALSE, otherwise coordinate of points.
         ## cat(sprintf("id, idx: %0.f, %0.f\n",
         ##            x[,"id"], x[,"index"]))
-        cat(".")
+        if (verbose == TRUE) {
+          message(".", appendLF=FALSE)
+        }
         ## spheres3d(x, radius = 0.05)
         TRUE
       }
     )
-    cat("\n")
+    if (verbose == TRUE) message()
 
     rgl::set3d(cur.dev, silent = TRUE) # Restore the current device.
 
@@ -154,5 +163,5 @@ select <- function(dev = NULL) {
   ## Restore the device ID.
   rgl::set3d(cur.dev, silent = TRUE)
 
-  cat()
+  return(ret)
 }

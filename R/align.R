@@ -13,20 +13,25 @@
 #'
 #' @param ax An axis to align
 #' @param dev RGL device to apply.  Defaults to current device.
-#' @param silent logical: Should the report be suppressed?
+#' @param verbose logical: Should the report be suppressed?
+#'
+#' @return No return value, called for side effects.
 #'
 #' @export
 #'
 #' @examples
-#' align("a")
-#' align("rb")
-#' align("1 1 0")
-#' align("60 -30")
-#' \dontrun{
-#' align(dev = 123, "a")
+#' \donttest{
+#' if (interactive()) {
+#'  align("a")
+#'  align("rb")
+#'  align("1 1 0")
+#'  align("60 -30")
+#'  align(dev = 123, "a")
 #' }
-align <- function(ax, dev = NULL, silent = FALSE) {
-  list(dev = dev, ax = ax, silent = silent)
+#' }
+align <- function(ax, dev = NULL, verbose = TRUE) {
+
+  list(dev = dev, ax = ax, verbose = verbose)
 
   ## Select device
   if (missing(dev)) {
@@ -47,8 +52,7 @@ align <- function(ax, dev = NULL, silent = FALSE) {
   ## by length().
 
   if (length(idx) == 0) {
-    cat("Can not align because the device was lost.\n")
-    return(-1)
+    stop("The device was lost.\n")
   }
 
 
@@ -177,8 +181,7 @@ align <- function(ax, dev = NULL, silent = FALSE) {
 
     fromPrevisou <- TRUE
   } else {
-    cat("Usage example:\n align(a)\n align(ra)\n align(\"-1 0 1\")\n")
-    return(-1)
+    stop("Syntax error.\n")
   }
 
 
@@ -247,24 +250,24 @@ align <- function(ax, dev = NULL, silent = FALSE) {
   ##   θz = atan(R[2,1]/R[1,1])  from atan(CySz/CyCz)  from atan(Sz/Cz)
   ##
 
-  if (silent == TRUE) {
-    return(1)
+  if (verbose == TRUE) {
+
+    ## diff <- solve(umatPre) %*% umat
+    diff <- umat %*% solve(umatPre)
+    rotX <- -atan(diff[3, 2] / diff[3, 3]) * 180 / pi
+    rotY <- -asin(-diff[3, 1]) * 180 / pi
+    rotZ <- -atan(diff[2, 1] / diff[1, 1]) * 180 / pi
+
+    ## To remove sign such as -0.  This is consistent with the %.0f later.
+    rotX <- ifelse(abs(rotX) < 1, 0, rotX)
+    rotY <- ifelse(abs(rotY) < 1, 0, rotY)
+    rotZ <- ifelse(abs(rotZ) < 1, 0, rotZ)
+
+    ## This is the result of the following rotations from previous.
+    message(sprintf(
+      "Current state from previous: x y z (deg): %.0f %.0f %.0f (deg)",
+      rotX, rotY, rotZ
+    ))
   }
 
-  ## diff <- solve(umatPre) %*% umat
-  diff <- umat %*% solve(umatPre)
-  rotX <- -atan(diff[3, 2] / diff[3, 3]) * 180 / pi
-  rotY <- -asin(-diff[3, 1]) * 180 / pi
-  rotZ <- -atan(diff[2, 1] / diff[1, 1]) * 180 / pi
-
-  ## To remove sign such as -0.  This is consistent with the %.0f later.
-  rotX <- ifelse(abs(rotX) < 1, 0, rotX)
-  rotY <- ifelse(abs(rotY) < 1, 0, rotY)
-  rotZ <- ifelse(abs(rotZ) < 1, 0, rotZ)
-
-  ## This is the result of the following rotations from previous.
-  cat(sprintf(
-    "Current state from previous: x y z (deg): %.0f %.0f %.0f (deg)\n",
-    rotX, rotY, rotZ
-  ))
 }

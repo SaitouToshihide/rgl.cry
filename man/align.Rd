@@ -4,14 +4,17 @@
 \alias{align}
 \title{Align crystal and diffraction pattern}
 \usage{
-align(ax, dev = NULL, silent = FALSE)
+align(ax, dev = NULL, verbose = TRUE)
 }
 \arguments{
 \item{ax}{An axis to align}
 
 \item{dev}{RGL device to apply.  Defaults to current device.}
 
-\item{silent}{logical: Should the report be suppressed?}
+\item{verbose}{logical: Should the report be suppressed?}
+}
+\value{
+No return value, called for side effects.
 }
 \description{
 Align crystal and diffraction pattern and displayed.
@@ -23,11 +26,13 @@ electron microscope (TEM) which typically have up to two axes.  However you
 can rotate around the z-axis by the drag originates near the window edge.
 }
 \examples{
-align("a")
-align("rb")
-align("1 1 0")
-align("60 -30")
-\dontrun{
-align(dev = 123, "a")
+\donttest{
+if (interactive()) {
+ align("a")
+ align("rb")
+ align("1 1 0")
+ align("60 -30")
+ align(dev = 123, "a")
+}
 }
 }

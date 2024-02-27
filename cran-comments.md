@@ -13,7 +13,7 @@
 
 * win-builder: x86_64-w64-mingw32
 
-         Status: 1 NOTE
+         Status: 3 NOTE
 
 
 ## revdepcheck results

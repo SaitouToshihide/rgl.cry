@@ -17,6 +17,9 @@ but ball-stick is not implemented.}
 
 \item{zoom}{A positive value indicating the current scene magnification.}
 }
+\value{
+An integer the device number of the currently window.
+}
 \description{
 Read a file in CIF formats, set the parameters, calculates them, and draws
 the crystal structure with an axis widget.
@@ -30,8 +33,10 @@ used.
 cry_demo()
 cry_demo(system.file("orthorhombic_p.cif", package = "rgl.cry"))
 
-\dontrun{
-cry_demo(file, type = "fill", zoom = 0.5)
-cry_demo("https://www.crystallography.net/cod/foo.cif")
+\donttest{
+if (interactive()) {
+ cry_demo(file, type = "fill", zoom = 0.5)
+ cry_demo("https://www.crystallography.net/cod/foo.cif")
+}
 }
 }

@@ -4,10 +4,15 @@
 \alias{select}
 \title{Select atoms or reciprocal lattice points.}
 \usage{
-select(dev = NULL)
+select(dev = NULL, verbose = TRUE)
 }
 \arguments{
 \item{dev}{RGL device to apply.  Defaults to current device.}
+
+\item{verbose}{logical: Should the report be suppressed?}
+}
+\value{
+List of Miller indices or element labels.
 }
 \description{
 Select one or more atoms or reciprocal lattice points in the window.  The
@@ -20,10 +25,10 @@ z-coordinates.  If you do not want to include all z-coordinates, you will
 need to modify the code.
 }
 \examples{
+\donttest{
 if (interactive()) {
-  select()
+ select()
+ select(dev = 123)
 }
-\dontrun{
-select(dev = 123)
 }
 }
