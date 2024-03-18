@@ -155,11 +155,13 @@ align <- function(ax, dev = NULL, verbose = TRUE) {
 
     tmp <- e * c(0, 1, 1) # Project the axis to the yz-plane.
     rotX <- acos(tmp[3] / norm(tmp, "2")) # Angle between projected tgt. and z.
+    rotX <- ifelse(tmp[2] > 0, -rotX, rotX) #
     umatX <- rgl::rotationMatrix(rotX, 1, 0, 0) # rot. mat. around the x axis.
     e <- e %*% umatX[1:3, 1:3] # Update the vector's coordinates.
 
     tmp <- e * c(1, 0, 1) # Project the axis to the xz-plane
     rotY <- acos(tmp[3] / norm(tmp, "2"))
+    rotY <- ifelse(tmp[1] > 0, rotY, -rotY) #
     umatY <- rgl::rotationMatrix(rotY, 0, 1, 0) # rotation around the y axis
     e <- e %*% umatY[1:3, 1:3] # apply rotate
   } else if (length(grep("^[-]?[0-9.]+ [-]?[0-9.]+$", ax)) == 1) { # rotX, rotY
