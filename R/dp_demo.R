@@ -24,7 +24,7 @@
 #' default value takes a long time to process displaying due to the large number
 #' of lattice points, you can expect to improve performance by increasing the
 #' value.
-#' @param ews.r Ewald sphere radius in angstrom.
+#' @param ews.r Ewald sphere radius in angstrom^-1.
 #' @param zoom A positive value indicating the current scene magnification.
 #' @param xrd A logical value indicating whether to create an X-ray diffraction
 #' pattern simulation result file.
@@ -36,6 +36,7 @@
 #' @examples
 #' dp_demo()
 #' dp_demo(system.file("orthorhombic_p.cif", package = "rgl.cry"))
+#' dp_demo(system.file("orthorhombic_p.cif", package = "rgl.cry"), res = 2.0)
 #'
 #' \donttest{
 #' if (interactive()) {
@@ -43,7 +44,8 @@
 #'  dp_demo("https://www.crystallography.net/cod/foo.cif")
 #' }
 #' }
-dp_demo <- function(file = NULL, reso = 1.2, ews.r = 37, zoom = 0.5, xrd = FALSE) {
+dp_demo <- function(file = NULL, reso = 1.2, ews.r = 40, zoom = 0.5, xrd = FALSE) {
+
   list(file = file, reso = reso, ews.r = ews.r, zoom = zoom, xrd = xrd)
 
   ## File or lCIF object to use.
@@ -70,7 +72,9 @@ dp_demo <- function(file = NULL, reso = 1.2, ews.r = 37, zoom = 0.5, xrd = FALSE
   uc <- cry::create_unit_cell(a, b, c, aa, bb, cc)
   ruc <- cry::create_rec_unit_cell(uc)
 
-  ##
+  ## Create a data of Miller indices.
+  ## The systematic absences have been taken into account in
+  ## cry::generate_miller() by calling cry::deplete_systematic_absences().
   hkl <- cry::generate_miller(uc, SG, reso) # list the h+k+l <= reso.
   pos <- cry::frac_to_orth(
     hkl[, c("H", "K", "L")],
@@ -79,7 +83,7 @@ dp_demo <- function(file = NULL, reso = 1.2, ews.r = 37, zoom = 0.5, xrd = FALSE
   )
 
   ## Ewald sphere and text label settings.
-  ews.r <- 37 # electron beam at 200 kV
+  ##ews.r <- 40 # relativistic wave number of electron beam at 200 kV
   ews.pos <- c(0, 0, ews.r) # center of Ewald sphere.
   text.offset <- c(0.03, 0.03, 0) # offset for text.
 
@@ -269,7 +273,8 @@ dp_demo <- function(file = NULL, reso = 1.2, ews.r = 37, zoom = 0.5, xrd = FALSE
         x <- v[1]
         y <- v[2]
         z <- v[3]
-        complex(0, cos(2 * pi * (h * x + k * y + l * z)), sin(2 * pi * (h * x + k * y + l * z)))
+        complex(0, cos(2 * pi * (h * x + k * y + l * z)),
+                sin(2 * pi * (h * x + k * y + l * z)))
       }))
     }
 
