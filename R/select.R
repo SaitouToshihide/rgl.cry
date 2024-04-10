@@ -13,6 +13,7 @@
 #' need to modify the code.
 #'
 #' @param dev RGL device to apply.  Defaults to current device.
+#' @param dc logical: Select the text of the diffraction cone.
 #' @param verbose logical: Should the report be suppressed?
 #'
 #' @return List of Miller indices or element labels.
@@ -26,9 +27,9 @@
 #'  select(dev = 123)
 #' }
 #' }
-select <- function(dev = NULL, verbose = TRUE) {
+select <- function(dev = NULL, dc = FALSE, verbose = TRUE) {
 
-  list(dev = dev, verbose = verbose)
+  list(dev = dev, dc = dc, verbose = verbose)
 
   ## Select device
   if (missing(dev)) {
@@ -70,7 +71,41 @@ select <- function(dev = NULL, verbose = TRUE) {
 
   rgl::set3d(tgt.dev, silent = TRUE)
 
-  if (type == "dp") {
+  if (dc == TRUE) {
+    ## Limit objects to select.
+    objIds <- rgl::ids3d(tag = TRUE, subscene = 0)
+    ##objIds <- objIds[(objIds$tag == "rlpoints[3-4]"), ] # 
+    ##objIds <- objIds[(objIds$type == "text"), ] # just to be sure.
+    objIds <- objIds[grep("^rlpoints[3-4].*", objIds$tag), ] # 
+    objIds <- objIds[(objIds$type == "linestrip"), ] # just to be sure.
+    ## If you limit the points based on visibility, ...
+
+    selection <- rgl::selectpoints3d(objIds$id,
+      value = FALSE,
+      multiple = function(x) {
+        ## x has id and index if `value' is
+        ## FALSE, otherwise coordinate of points.
+        ## cat(sprintf("id, idx: %0.f, %0.f\n",
+        ##            x[,"id"], x[,"index"]))
+        if (verbose == TRUE) {
+          message(".", appendLF=FALSE)
+        }
+        TRUE
+      }
+    )
+    if (verbose == TRUE) message()
+
+    ## Reports
+    hkl <- inst[[idx, "hkl"]]
+    i <- selection[, "id"] # 
+    i <- as.numeric(i)
+    ret <- sapply(i, function(j) {
+      k <- which(objIds$id == j) # What number is it?
+      sub("rlpoints[3-4] ", "", objIds[k,]$tag)
+    })
+  }
+
+  else if (type == "dp") {
     ## Limit objects to select.
     objIds <- rgl::ids3d(tag = TRUE, subscene = 0)
     objIds <- objIds[(objIds$tag == "rlpoints1"), ] # reciprocal lattice points.

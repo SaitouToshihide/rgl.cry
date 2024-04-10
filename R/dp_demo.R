@@ -311,15 +311,115 @@ dp_demo <- function(file = NULL, reso = 1.2, ews.r = 40, zoom = 0.5, xrd = FALSE
 
 
 
+  ## ------------------------------------------------------------
+  ## Find the diffraction cone and the circumference of its base circle for each
+  ## diffraction plane.
+  ## 
+  ## The circumference was divided into n equal parts, and the coordinates of
+  ## each point were stored in pts[[i]].
+
+  pts <<- list()   # Store cooridinate for each hkl plane.
+  posvv <<- list() # for debug only
+  for (i in seq_len(nrow(hkl))) {
+
+    pts[[i]] <<- list()
+    posvv[[i]] <<- list()
+
+    s <- as.numeric(hkl[i,]$S) # s = 1 / d
+
+    if (s == 0) next # Excluding the origin.
+
+    ## Let θB denote the angle between the 200 kV electron beam and each
+    ## lattice plane spacing that satisfies the Bragg condition, and let 2θ be
+    ## the apex angle of the cone.
+    thetaB <- asin((s / 2) / ews.r) # From Bragg's formula.
+    theta <- (pi / 2) - thetaB
+
+    ## Extract the coordinates of the target spot.
+    ptmp1 <- unlist(pos[i,])
+
+    ## 1. Obtain a vector posv perpendicular to the diffraction vector ptmp1 of
+    ##    the spot.
+    ## 2. To obtain the value of posv, define an arbitrary vector named ptmp2
+    ##    and calculate the cross product of ptmp1 and ptmp2.
+    ## 3. If the cross product cannot be obtained in the first trial, change
+    ##    ptmp2 and calculate again.
+    ## 4. Normalize the obtained posv.
+    ptmp2 <- c(1, 0, 0)
+    posv <- pracma::cross(ptmp2, ptmp1)
+    if (abs(posv[1]) < 1e-6 & abs(posv[2]) < 1e-6 & abs(posv[3]) < 1e-6) {
+      ## Recalculate with a different ptmp2 because there was an NA (failure).
+      ptmp2 <- c(0, 1, 0)
+      posv <- pracma::cross(ptmp2, ptmp1)
+    }
+
+    posv <- posv / dist(rbind(c(0, 0, 0), posv))
+    ##print(sprintf("posv: % 2s % 2s % 2s: % 1.20f % 1.20f % 1.20f", hkl[i, 1], hkl[i, 2], hkl[i, 3], posv[1], posv[2], posv[3]))
+
+    ## Calculate the vector with its origin at a point on the rotation axis
+    ## and its end at the point of intersection between the generatrix of the
+    ## diffraction cone and the unit sphere.
+    ##
+    ## Let h be the position on the rotation axis, r be the radius of the base
+    ## of the cone at that position, and posv be the direction. Therefore:
+    h <- cos(theta)
+    r <- sin(theta)
+    posv <- r * (posv + h * ptmp1)
+
+    ## I'm not entirely sure how to handle it correctly. I'm still trying to
+    ## figure it out.
+    ##
+    ##posv <- posv + ptmp1 # move to the spot position.
+
+    posvv[[i]] <<- rbind(ptmp1, posv) # for debug only
+    ##if (i == 9 | i == 11) print(h)
+    ##if (i == 9 | i == 11) print(r)
+    ##if (i == 9 | i == 11) print(posv)
+
+    ## Rotate posv around the rotation axis and record the coordinates of each
+    ## point.
+    for (j in seq(0, 2*pi, pi/30)) { # Divide into 60.
+      vrmat <- rgl::rotationMatrix(j, ptmp1[1], ptmp1[2], ptmp1[3])
+      pts[[i]] <<- rbind(unlist(pts[[i]]),
+                         as.numeric(posv %*% vrmat[1:3, 1:3]))
+    }
+
+  }
+
+
 
   ## ------------------------------------------------------------
   ## Define a drawing function.
 
   drawDp <- function() {
+
+    ## ------------------------------
+    ## Diffraction pattern
+
+    ## The coordinates of the reciprocal lattice points `pos' are fixed, while
+    ## the user's viewpoint changes with mouse operation.  The change of the
+    ## user's viewpoint is stored in the transformation matrix `userMatrix.'
+    ## The coordinates of the light source `ews.pos' are transformed by
+    ## `userMatrix' to `ews.pos.new' so that they follow the user's viewpoint.
+    ## The distance from ews.pos.new to each reciprocal lattice point is used to
+    ## determine whether it is near the surface of the Ewald sphere.
+
     umat <- rgl::par3d("userMatrix")
 
-    ## Remove previous plots (convenience objects, reciprocal lattice, label)
+    ## Remove previous plots:
+    ##
+    ## 0 convenience objects
+    ## 1 diffraction pattern: drawings
+    ## 2 diffraction pattern: label text
+    ## 3 diffraction cone:    drawings
+    ## 4 diffraction cone:    label text
+    ## 5 diffraction cone:    debug
+
     rgl::pop3d(tag = c("rlpoints0", "rlpoints1", "rlpoints2"))
+    rgl::pop3d(tag = c("rlpoints3", "rlpoints4", "rlpoints5"))
+    objIds <- rgl::ids3d(tag = TRUE, subscene = 0)
+    objIds <- objIds[grep("^rlpoints[3-5].*", objIds$tag), ] # e.g. rlpoints3HKL
+    rgl::pop3d(id = objIds$id)
 
     ## Caliculate the lattice points that are within a certain distance of the
     ## Ewald sphere surface.
@@ -335,8 +435,8 @@ dp_demo <- function(file = NULL, reso = 1.2, ews.r = 40, zoom = 0.5, xrd = FALSE
       v <- ifelse(v < 0, 0, v) # Flooring the result to 0.
     })
 
-    ## Place the sphere to prevent the draw area from being clipped.
-    rgl::spheres3d(frame, r = 0, color = "green", alpha = 0, tag = "rlpoints0")
+    ## Place the sphere to prevent the drawing area from being clipped.
+    rgl::spheres3d(1000*frame, r = 10, alpha = 0, tag = "rlpoints0")
 
     ## Draw the reciprocal lattice points that satisfy the criteria, and set the
     ## alpha value of the lattice points that do not satisfy the criteria to 0.
@@ -361,6 +461,265 @@ dp_demo <- function(file = NULL, reso = 1.2, ews.r = 40, zoom = 0.5, xrd = FALSE
     ##
     ##        as.numeric(text.offset %*% umat[1:3,1:3]) + pos
     ##
+
+
+    ## ------------------------------
+    ## Diffraction cone
+    ##
+    ## For each reciprocal lattice point, draw the line on the virtual screen
+    ## that corresponds to the intersection of the diffraction cone and the
+    ## virtual screen.
+    ##
+
+    ##   Bragg's law
+    ##
+    ##     λ = 2d sin θB
+    ##     θB = asin(λ / 2d)
+    ##
+    ##     At 200 kV, an electron beam has a wavelength of 0.025 Å, giving:
+    ##
+    ##     θB = asin(0.025 / 2d)
+    ## 
+    ## 
+    ##   Parts of a Cone
+    ## 
+    ##                (in Japanese)
+    ##     cone       円錐
+    ##     base       底面
+    ##     generatrix 母線
+    ##     apex       頂点
+    ##     apex angle 頂角
+    ##     axis       回転軸
+    ## 
+
+    for (i in seq_len(nrow(hkl))) {
+      ## Loop variables are i, j, k, ..., in that order.
+
+      str <- paste(hkl[i,]$H, hkl[i,]$K, hkl[i,]$L)
+      s <- as.numeric(hkl[i,]$S)
+
+      if (s == 0) next # Excluding the origin.
+
+      ## DEBUG: Select the planes.
+      ##if (i != 1) next
+      ##if (i != 2) next
+      ##if (i != 3) next
+      ##if (i != 1 & i != 2) next
+      ##if (i != 1 & i != 2 & i != 3) next
+      ##if (i != 2 & i != 32) next
+      ##print(str)
+      ##print(sprintf(posv: "% 2s % 2s % 2s: % 1.20f % 1.20f % 1.20f", hkl[i, 1], hkl[i, 2], hkl[i, 3], posv[i, 1], posv[i, 2], posv[i, 3]))
+
+      ## Colors
+      ## 
+      ## https://stackoverflow.com/questions/15282580/how-to-generate-a-number-of-most-distinctive-colors-in-r
+
+      colorList <- grep("gr(a|e)y", colors(), invert = TRUE)
+      color <- colorList[i]
+
+      ## 
+      ## A vector from point A to point B:
+      ##   v = (x2-x1, y2-y1, z2-z1).
+      ##
+      ## Position vector a with point A as the origin:
+      ##   v0 = (x0, y0, z0).
+      ##
+      ## Then, the equation of the line is:
+      ##  rr = v0 + t * v.
+      ##
+      ## Where rr is the position vector of a point on the line, and t is a
+      ## real number.
+      ##
+      ## Setting point v0 to (0, 0, offz) and vector v to pts,
+      ## then, the equation of the line becomes:
+      ##
+      ##   rr = v0 + t * pts
+      ##
+      ## The intersection of this line and the plane z = 0 is as follows,
+      ## focusing on z:
+      ##
+      ##   0 = offz + t * pts[3]
+      ##   t = -offz / pts[3]
+      ##
+      ##   rr = (0, 0, offz) + (-offz / pts[3]) * pts
+      ## 
+      ## The offz value is determined as follows:
+      ## 
+      ## First, to ensure that the reciprocal lattice point drawing and
+      ## diffraction cone scaling are consistent, the lattice plane with a
+      ## spacing of 1 Å is drawn as a sphere at a distance of 1 a.u. from the
+      ## origin in the reciprocal lattice space.  Also, from Bragg's equation:
+      ##   θB = asin(0.025 / 2)
+      ## 
+      ## The z-position where the distance between the line that makes an
+      ## angle of θB with the z-axis in real space and the line perpendicular
+      ## to the z-axis becomes 1 (that is 2) can be calculated as follows:
+      ##   2 / tan(θB) = 2 / tan(asin(0.025 / 2))
+      ## Therefore, offz can be set to 1 / tan(θB).
+      ## 
+
+      ## So far, we have calculated the coordinates of the reciprocal lattice
+      ## points rotated according to the user's view.
+      ## Next, we apply the inverse of the same transformation to the
+      ## coordinates of the base circumference of all diffraction cones, because
+      ## we want to calculate the intersection with the z = 0 plane.
+
+      ptsR <- t(apply(pts[[i]], 1, function(m) {
+        m %*% t(umat[1:3, 1:3])
+      }))
+      ## cubic_i, res = 3.7.  1 0 0, -1 0 0
+      ##if (i == 9 | i == 11) { print(pos[i,]) } # 
+      ##if (i == 9 | i == 11) { print(pts[i]) } # 
+      ##if (i == 9 | i == 11) print(ptsR)
+      ##if (i == 9 | i == 11) print(posvv[[i]])
+      ##print(umat)
+
+      ## DEBUG: Show the base circumference before applying the transformation.
+      if (FALSE) rgl::spheres3d(pts[[i]], r = 0.01,
+                               col = color, alpha = 0.2,
+                               tag = paste("rlpoints5", str))
+
+      ## DEBUG: Show the base circumference after applying the transformation.
+      if (FALSE) rgl::spheres3d(ptsR, r = 0.01,
+                               col = "purple", alpha = 0.2,
+                               tag = paste("rlpoints5", str))
+
+
+      ## We calculate the intersections of the lines passing through the apex
+      ## and a point on the base circumference of the diffraction cone and the
+      ## plane z = 0.
+      ## Next, we apply the coordinate transformation to the previously
+      ## inverse-transformed coordinates to align them with the current view.
+
+      ## I'm not entirely sure how to handle it correctly. I'm still trying to
+      ## figure it out.
+      ##
+      ##offz <- 1 # select when posv moved to ptmp1 position.
+      ##offz <- 2 / tan(asin(0.025 / 2)) # when posv is inside the unit sphere.
+      offz <- 1 # easy to see in any case
+
+      rr <- NULL
+      for (j in seq(1, nrow(ptsR))) {
+        t <- -offz / ptsR[j, 3]
+        if (t > 0) {
+          rr <- rbind(rr,
+                      c(0, 0, offz) + t * c(ptsR[j,1], ptsR[j,2], ptsR[j,3]))
+        }
+      }
+      if (is.null(rr)) next
+      rr <- rr %*% umat[1:3, 1:3]
+
+      ##print(sprintf("ptsR: %d % 1.20f % 1.20f % 1.20f", i, ptsR[i, 1], ptsR[i, 2], ptsR[i, 3]))
+      ##print(sprintf("rr: %d: % 1.20f % 1.20f % 1.20f", i, rr[, 1], rr[, 2], rr[, 3]))
+
+      ## Disconnect points that are not smoothly connected to the previous and
+      ## next points in the line of intersection.
+      lseq <- NULL
+
+      for (j in seq(1, nrow(rr))) {
+        v1 <- if (j == 1) { rr[nrow(rr),] } else { rr[j - 1,] }
+        v2 <- if (j == nrow(rr)) { rr[1,] } else { rr[j + 1,] }
+        v1 <- v1 - rr[j,]
+        v2 <- v2 - rr[j,]
+        ## (v1 %*% v2)/(norm(v1, "2") * norm(v2, "2")) > 1 can happen and
+        ## acos(1.0000000000000002) return NaN, so need to prevent this.
+        phi <- acos(min(1, (v1 %*% v2)/(norm(v1, "2") * norm(v2, "2"))))
+        if (is.nan(phi)) next # それ以外にもNaNはある．v1 が (0, 0, 0) 等．
+        if (phi > pi / 2) lseq <- c(lseq, j)
+      }
+      ##print(lseq)
+
+      ## Limit the drawing area.
+      ## Check the coordinate values within a certain range and get the index.
+      lseq2 <- which(rr[, 1] < 100 & rr[, 2] < 100 &
+                     rr[, 1] > -100 & rr[, 2] > -100)
+      ##print(lseq2)
+
+      lseq <- intersect(lseq, lseq2)
+      ##print(lseq)
+
+      ## All values are out of range.  Skipping to the next step.
+      if (length(lseq) == 0) next
+
+      ## Extract groups of consecutive elements and store their start and end
+      ## indices.   First, calculate the differences between consecutive values.
+
+      lseq_diff <- diff(lseq)
+      if (length(lseq_diff) == 0) next
+
+      start <- NULL
+      for (j in seq(1, length(lseq_diff))) {
+        if (j == 1) { start <- lseq[j] }
+        else if (j > 2 & lseq_diff[j - 1] == 1) {}
+        else if (j > 2 & lseq_diff[j] == 1) { start <- c(start, lseq[j]) }
+      }
+      ##print(start)
+
+      end <- NULL
+      for (j in seq(1, length(lseq_diff))) {
+        if (j > 1 && lseq_diff[j - 1] == 1) {
+          if (lseq_diff[j] != 1) { end <- c(end, lseq[j]) }
+        }
+        if (j == length(lseq_diff) & lseq_diff[j] == 1) {
+          end <- c(end, lseq[j + 1])
+        }
+      }
+      ##print(end)
+
+
+      ## Draw line of intersection.
+      lines <- NULL
+      for (j in seq(1, length(start))) {
+        lines[[j]] <- rr[start[j]:end[j],]
+      }
+
+      lapply(lines, function(m) {
+
+        rgl::lines3d(m, col = color, alpha = 1, lwd = 1,
+        ##rgl::lines3d(m, col = "black", alpha = 1, lwd = 1,
+                     tag = paste("rlpoints3", str))
+
+        rgl::text3d(m + c(0.0015, 0.0015, 0.0015),
+                    texts = str, cex = 0.50, col = "black", secular="black",
+                    tag = paste("rlpoints4", str))
+
+      })
+
+
+      ## DEBUG: Show the reciprocal lattice vector and its normal vector.
+      if (FALSE) {
+        rgl::lines3d(rbind(c(0, 0, 0), pos[i,]),
+                     col = color, alpha = 0.5, lwd = 6,
+                     tag = paste("rlpoints5", str))
+        rgl::lines3d(posvv[[i]], col = color, alpha = 0.5, lwd = 6,
+                     tag = paste("rlpoints5", str))
+      }
+
+
+      ## DEBUG: Show the lines of radius
+      if (FALSE) {
+
+        cent <- (c(0, 0, offz) %*% umat[1:3, 1:3])[1,]
+
+        ## radial lines to the line of intersection.
+        rlines <- NULL
+        lapply(lines, function(m) {
+          apply(m, 1, function(n) {
+            rlines <<- rbind(rlines, rbind(unlist(cent), n))
+          })
+        })
+        ##rgl::lines3d(rlines, col = color, lwd = 1, tag = "rlpoints5")
+
+        ## radial lines to the unit sphere radius.
+        rlines <- NULL
+        apply(pts[[i]], 1, function(m) {
+          rlines <<- rbind(rlines, rbind(c(0, 0, 0), m))
+        })
+        rgl::lines3d(rlines, col = color, lwd = 1, tag = "rlpoints5")
+      }
+
+    }
+
   }
 
 
@@ -400,7 +759,8 @@ dp_demo <- function(file = NULL, reso = 1.2, ews.r = 40, zoom = 0.5, xrd = FALSE
   ## initial view settings
   rgl::par3d(mouseMode = rgl::r3dDefaults$mouseMode)
   rgl::clear3d()
-  rgl::par3d(windowRect = c(0, 0, 500, 500))
+  ##rgl::par3d(windowRect = c(0, 0, 500, 500))
+  rgl::par3d(windowRect = c(0, 0, 1000, 1000))
   rgl::view3d(theta = 0, phi = 0, zoom = 1, fov = 0)
 
   frame <- rbind(
@@ -484,7 +844,8 @@ dp_demo <- function(file = NULL, reso = 1.2, ews.r = 40, zoom = 0.5, xrd = FALSE
   ## ------------------------------------------------------------
   ## Subscene on the top of scenes for event handling.
 
-  rgl::newSubscene3d(newviewport = c(0, 0, 500, 500), mouseMode = "replace")
+  ##rgl::newSubscene3d(newviewport = c(0, 0, 500, 500), mouseMode = "replace")
+  rgl::newSubscene3d(newviewport = c(0, 0, 1000, 1000), mouseMode = "replace")
 
   ## Save the scene id and set the mouseMode for this scene.
   dp.panel.id <- rgl::currentSubscene3d()
