@@ -77,10 +77,10 @@ dp_demo <- function(file = NULL, reso = 1.2, ews.r = 40, zoom = 0.5, xrd = FALSE
   ## cry::generate_miller() by calling cry::deplete_systematic_absences().
   hkl <- cry::generate_miller(uc, SG, reso) # list the h+k+l <= reso.
   pos <- cry::frac_to_orth(
-    hkl[, c("H", "K", "L")],
-    ruc$ar, ruc$br, ruc$cr,
-    ruc$alpha, ruc$beta, ruc$gamma, 2
-  )
+                hkl[, c("H", "K", "L")],
+                ruc$ar, ruc$br, ruc$cr,
+                ruc$alpha, ruc$beta, ruc$gamma, 2
+              )
 
   ## Ewald sphere and text label settings.
   ##ews.r <- 40 # relativistic wave number of electron beam at 200 kV
@@ -518,10 +518,11 @@ dp_demo <- function(file = NULL, reso = 1.2, ews.r = 40, zoom = 0.5, xrd = FALSE
 
     ## Retrieve the cry and dp pair of this instance.
     inst <- pkg$inst # Get the current list of instance.
+    idx <- which(inst$dp.dev == dp.dev)
     start$cry.dev <<- inst[inst$dp.dev == dp.dev, "cry.dev"]
-    start$cry.widget.id <<- inst[inst$dp.dev == dp.dev, "cry.widget.id"]
-    start$cry.root.id <<- inst[inst$dp.dev == dp.dev, "cry.root.id"]
-    start$cry.panel.id <<- inst[inst$dp.dev == dp.dev, "cry.panel.id"]
+    start$cry.widget.id <<- inst[idx, "cry.widget.id"]
+    start$cry.root.id <<- inst[idx, "cry.root.id"]
+    start$cry.panel.id <<- inst[idx, "cry.panel.id"]
 
 
     ## The rotation is reset to its original value when the mouse is

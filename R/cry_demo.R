@@ -436,10 +436,11 @@ cry_demo <- function(file = NULL, rf = 1, type = "b", zoom = 1) {
 
     ## Retrieve the cry and dp pair of this instance.
     inst <- pkg$inst # Get the current list of instance.
-    start$dp.dev <<- inst[inst$cry.dev == cry.dev, "dp.dev"]
-    start$dp.widget.id <<- inst[inst$cry.dev == cry.dev, "dp.widget.id"]
-    start$dp.root.id <<- inst[inst$cry.dev == cry.dev, "dp.root.id"]
-    start$dp.panel.id <<- inst[inst$cry.dev == cry.dev, "dp.panel.id"]
+    idx <- which(inst$cry.dev == cry.dev)
+    start$dp.dev <<- inst[idx, "dp.dev"]
+    start$dp.widget.id <<- inst[idx, "dp.widget.id"]
+    start$dp.root.id <<- inst[idx, "dp.root.id"]
+    start$dp.panel.id <<- inst[idx, "dp.panel.id"]
 
 
     ## The rotation is reset to its original value when the mouse is
