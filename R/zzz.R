@@ -36,11 +36,14 @@ pkg <- NULL
       dp.root.id = NA, # Scene id.
       dp.widget.id = NA,
       dp.panel.id = NA,
-      drawDp = I(list(1)), # The draw function for reciprocal lattice.
-      lCIF = I(list(1)), # The output of CIF.
-      uc = I(list(1)), # The unit cell object.
-      ruc = I(list(1)), # The reciprocal unit cell object.
-      hkl = I(list(1)) # The set of Miller indices up to a given resolution.
+      drawDp = I(list(NULL)), # The draw function for reciprocal lattice.
+      lCIF = I(list(NULL)), # The output of CIF.
+      uc = I(list(NULL)), # The unit cell object.
+      ruc = I(list(NULL)), # The reciprocal unit cell object.
+      hkl = I(list(NULL)), # Set of Miller indices up to a given resolution.
+      pts = I(list(NULL)), # Coordinates of the base circumference of diffraction cones.
+      pos = I(list(NULL)), # Coordinates of the target diffraction spot.
+      posvv = I(list(NULL)) # Debug vector for diffraction cone drawing.
     ),
     pkg
   )

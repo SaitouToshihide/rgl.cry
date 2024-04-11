@@ -393,6 +393,16 @@ dp_demo <- function(file = NULL, reso = 1.2, ews.r = 40, zoom = 0.5, xrd = FALSE
 
   drawDp <- function() {
 
+    ## Retrieve some parameters if they aren't prepared.
+    idx <- which(inst$dp.dev == dp.dev)
+    if (length(inst[[idx, "hkl"]]) == 4) { # 0 list(NULL) or 4 list(h k l S)
+      hkl <<- inst[[idx, "hkl"]]
+      pts <<- inst[[idx, "pts"]]
+      pos <<- inst[[idx, "pos"]]
+      posvv <<- inst[[idx, "posvv"]]
+    }
+
+
     ## ------------------------------
     ## Diffraction pattern
 
@@ -1010,6 +1020,9 @@ dp_demo <- function(file = NULL, reso = 1.2, ews.r = 40, zoom = 0.5, xrd = FALSE
   inst[[nrow(inst), "uc"]] <- uc
   inst[[nrow(inst), "ruc"]] <- ruc
   inst[[nrow(inst), "hkl"]] <- hkl
+  inst[[nrow(inst), "pts"]] <- pts
+  inst[[nrow(inst), "pos"]] <- pos
+  inst[[nrow(inst), "posvv"]] <- posvv
   inst[[nrow(inst), "lCIF"]] <- lCIF
   inst[[nrow(inst), "drawDp"]] <- drawDp
   inst[nrow(inst), "dp.root.id"] <- dp.root.id
