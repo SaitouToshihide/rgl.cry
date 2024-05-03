@@ -417,8 +417,6 @@ cry_demo <- function(file = NULL, rf = 1, type = "b", zoom = 1) {
   start$time <- 0
 
   begin <- function(x, y) {
-    ## Save the device ID when the function is called and restore it later.
-    cur.dev <- rgl::cur3d()
 
     ## Save parameters.
     time.current <- as.numeric(Sys.time()) * 1000 # micro to milli
@@ -462,6 +460,7 @@ cry_demo <- function(file = NULL, rf = 1, type = "b", zoom = 1) {
         rgl::useSubscene3d(start$dp.panel.id)
         idx <- which(inst$dp.dev == start$dp.dev)
         inst[[idx, "drawDp"]]()
+        rgl::set3d(cry.dev, silent = TRUE)
       }
     }
 
@@ -469,24 +468,19 @@ cry_demo <- function(file = NULL, rf = 1, type = "b", zoom = 1) {
     start$x <<- x
     start$y <<- y
     start$umat <<- umat
-
-    ## Restore the device ID.
-    rgl::set3d(cur.dev, silent = TRUE)
   }
 
   ## Rotate and redraw by draging the mouse.
   update <- function(x, y) {
-    ## Save the device ID when the function is called and restore it later.
-    cur.dev <- rgl::cur3d()
 
     ## Get the umat at the begining.
     umat <- start$umat # call begin then call update without sequencially
-    viewport <- rgl::par3d("viewport")
+    viewport <- rgl::par3d("viewport", dev = cry.dev)
 
     w <- viewport[["width"]]
     h <- viewport[["height"]]
-    x <- (x - start$x) / viewport[["width"]] / 1 # 1 is enpirically derived.
-    y <- (y - start$y) / viewport[["height"]] / 1
+    x <- (x - start$x) / w / 1 # 1 is enpirically derived.
+    y <- (y - start$y) / h / 1
 
     rot <- 0
     if (start$x > 0.95 * w) {
@@ -531,10 +525,9 @@ cry_demo <- function(file = NULL, rf = 1, type = "b", zoom = 1) {
       inst <- pkg$inst # Get the current list of instance.
       idx <- which(inst$dp.dev == start$dp.dev)
       inst[[idx, "drawDp"]]()
+      rgl::set3d(cry.dev, silent = TRUE)
     }
 
-    ## Restore the device ID.
-    rgl::set3d(cur.dev, silent = TRUE)
   }
 
 

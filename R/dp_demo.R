@@ -889,8 +889,6 @@ dp_demo <- function(file = NULL, reso = 1.2, ews.r = 40, zoom = 0.5, xrd = FALSE
   start$time <- 0
 
   begin <- function(x, y) {
-    ## Save the device ID when the function is called and restore it later.
-    cur.dev <- rgl::cur3d()
 
     ## Save parameters.
     time.current <- as.numeric(Sys.time()) * 1000 # micro to milli
@@ -933,6 +931,7 @@ dp_demo <- function(file = NULL, reso = 1.2, ews.r = 40, zoom = 0.5, xrd = FALSE
         rgl::par3d(subscene = start$cry.panel.id, userMatrix = umat)
         rgl::useSubscene3d(start$cry.panel.id)
         ## drawCry() # not necessary.
+        rgl::set3d(dp.dev, silent = TRUE)
       }
     }
 
@@ -940,25 +939,19 @@ dp_demo <- function(file = NULL, reso = 1.2, ews.r = 40, zoom = 0.5, xrd = FALSE
     start$x <<- x
     start$y <<- y
     start$umat <<- umat
-
-    ## Restore the device ID.
-    rgl::set3d(cur.dev, silent = TRUE)
   }
 
   ## Rotate and redraw by draging the mouse.
   update <- function(x, y) {
-    ## Save the Device ID when the function is called and restore it later.
-    cur.dev <- rgl::cur3d()
 
     ## Get the umat at the begining.
     umat <- start$umat # call begin then call update without sequencially
-    viewport <- rgl::par3d("viewport")
+    viewport <- rgl::par3d("viewport", dev = dp.dev)
 
     w <- viewport[["width"]]
     h <- viewport[["height"]]
     x <- (x - start$x) / w / 1 # 1 is empirically derived.
     y <- (y - start$y) / h / 1
-    umat <- start$umat
 
     rot <- 0
     if (start$x > 0.95 * w) {
@@ -1001,10 +994,9 @@ dp_demo <- function(file = NULL, reso = 1.2, ews.r = 40, zoom = 0.5, xrd = FALSE
       rgl::par3d(subscene = start$cry.panel.id, userMatrix = umat)
       rgl::useSubscene3d(start$cry.panel.id)
       ## drawCry() # not necessary.
+      rgl::set3d(dp.dev, silent = TRUE)
     }
 
-    ## Restore the device ID.
-    rgl::set3d(cur.dev, silent = TRUE)
   }
 
   rotate <- function(r) {
