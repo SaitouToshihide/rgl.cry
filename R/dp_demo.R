@@ -73,14 +73,28 @@ dp_demo <- function(file = NULL, reso = 1.2, ews.r = 40, zoom = 0.5, xrd = FALSE
   ruc <- cry::create_rec_unit_cell(uc)
 
   ## Create a data of Miller indices.
+  ## 
   ## The systematic absences have been taken into account in
   ## cry::generate_miller() by calling cry::deplete_systematic_absences().
   hkl <- cry::generate_miller(uc, SG, reso) # list the h+k+l <= reso.
-  pos <- cry::frac_to_orth(
-                hkl[, c("H", "K", "L")],
-                ruc$ar, ruc$br, ruc$cr,
-                ruc$alpha, ruc$beta, ruc$gamma, 2
-              )
+
+  xyzf <- matrix(c(1, 0, 0, 0, 1, 0, 0, 0, 1), ncol = 3, byrow = TRUE) #
+  xyz <- cry::frac_to_orth(
+    xyzf, a, b, c,
+    aa, bb, cc, 2
+  )
+  ea1 <- as.numeric(xyz[1, ])
+  ea2 <- as.numeric(xyz[2, ])
+  ea3 <- as.numeric(xyz[3, ])
+
+  V <- as.numeric(ea1 %*% pracma::cross(ea2, ea3))
+  eb1 <- pracma::cross(ea2, ea3) / V
+  eb2 <- pracma::cross(ea3, ea1) / V
+  eb3 <- pracma::cross(ea1, ea2) / V
+
+  pos <- t(apply(hkl, 1, function(v) {
+    v["H"] * eb1 + v["K"] * eb2 + v["L"] * eb3
+  }))
 
   ## Ewald sphere and text label settings.
   ##ews.r <- 40 # relativistic wave number of electron beam at 200 kV
@@ -440,14 +454,19 @@ dp_demo <- function(file = NULL, reso = 1.2, ews.r = 40, zoom = 0.5, xrd = FALSE
 
 
   ## lattice
+  ## 
+  ## When ochoice = 2, as the help document of frac_to_orth() states, "The X axis
+  ## is along a*; the Y axis lies in the (a*,b*) plane; the Z axis is,
+  ## consequently, along c."
+  ## 
   xyz <- cry::frac_to_orth(
     xyzf, uc$a, uc$b, uc$c,
     uc$alpha, uc$beta, uc$gamma, 2
   )
   xyz_max <- max(xyz[1, ], xyz[2, ], xyz[3, ])
-  ea1 <- (unlist(xyz[1, ]) / xyz_max)
-  ea2 <- (unlist(xyz[2, ]) / xyz_max)
-  ea3 <- (unlist(xyz[3, ]) / xyz_max)
+  ea1 <- as.numeric(xyz[1, ]) / xyz_max
+  ea2 <- as.numeric(xyz[2, ]) / xyz_max
+  ea3 <- as.numeric(xyz[3, ]) / xyz_max
 
   lines <- rbind(
     oo, ea1, oo, ea2, ea1 + ea2, ea1, ea1 + ea2, ea2,
@@ -461,14 +480,14 @@ dp_demo <- function(file = NULL, reso = 1.2, ews.r = 40, zoom = 0.5, xrd = FALSE
 
 
   ## reciprocal lattice
-  xyzr <- cry::frac_to_orth(
-    xyzf, ruc$ar, ruc$br, ruc$cr,
-    ruc$alpha, ruc$beta, ruc$gamma, 2
-  )
-  xyzr_max <- max(xyzr[1, ], xyzr[2, ], xyzr[3, ])
-  eb1 <- unlist(xyzr[1, ]) / xyzr_max
-  eb2 <- unlist(xyzr[2, ]) / xyzr_max
-  eb3 <- unlist(xyzr[3, ]) / xyzr_max
+  V <- as.numeric(ea1 %*% pracma::cross(ea2, ea3))
+  eb1 <- pracma::cross(ea2, ea3) / V
+  eb2 <- pracma::cross(ea3, ea1) / V
+  eb3 <- pracma::cross(ea1, ea2) / V
+  eb_max <- max(eb1, eb2, eb3)
+  eb1 <- eb1 / eb_max
+  eb2 <- eb2 / eb_max
+  eb3 <- eb3 / eb_max
 
   lines <- rbind(
     oo, eb1, oo, eb2, eb1 + eb2, eb1, eb1 + eb2, eb2,
