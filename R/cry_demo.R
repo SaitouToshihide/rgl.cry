@@ -374,7 +374,8 @@ cry_demo <- function(file = NULL, rf = 1, type = "b", zoom = 1) {
 
   ## Place the dummy sphere to prevent the draw area from modification.
   ## r=0 is prevention of protrusion.
-  rgl::spheres3d(frame, r = 0, color = "green", alpha = 0) #
+  rgl::spheres3d(100*frame, r = 0, color = "green", alpha = 0) #
+  rgl::par3d(zoom = 0.2) #
 
   ## Axis widget
   oo <- c(0, 0, 0)
@@ -394,9 +395,6 @@ cry_demo <- function(file = NULL, rf = 1, type = "b", zoom = 1) {
   rgl::text3d(a0, texts = "a", cex = 1.0, col = "black")
   rgl::text3d(b0, texts = "b", cex = 1.0, col = "black")
   rgl::text3d(c0, texts = "c", cex = 1.0, col = "black")
-
-  ##
-  rgl::par3d(zoom = 2) # fixed value for widget.
 
 
   ## ------------------------------------------------------------
