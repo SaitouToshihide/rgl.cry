@@ -278,3 +278,20 @@ mtext(~ italic("I"), side = 2, line = 3)
 ## Acknowledgment
 
 I would like to express my gratitude to the rgl, cry packages, and R for making this work possible.  The data for the scattering factors is based on the data from the KEK Report @sc_table_kek.  For the coloring of the atoms, I used @mol_color, and for the atomic radii, I used @enwiki:1179864711.
+
+
+<!-- ------------------------------ -->
+
+## Features under consideration
+
+I'm considering implementing Kikuchi line drawing for my studies at <a href="https://github.com/SaitouToshihide/rgl.cry/tree/DiffractionCone">https://github.com/SaitouToshihide/rgl.cry/tree/DiffractionCone</a> and <a href="https://saitoutoshihide.github.io/rgl.cry/features.html">my study zone</a>.
+
+<div style="margin: 3% 15%; display: flex; flex-wrap: wrap; justify-content: center;">
+<div style="width: 45%; height: 45%;">
+![BCC structure along the [0 0 1] axis.](./images/cubic_i_01.png){width=90%}
+</div>
+<div style="width: 10%;"></div>
+<div style="width: 45%; height: 45%;">
+![A zoomed-in view.](./images/cubic_i_02.png){width=90%}
+</div>
+</div>
