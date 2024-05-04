@@ -2,12 +2,12 @@
 // The Javascript functions for mouse callback in WebGL.
 // 
 
-window.subidPanel = %subidPanel%;
-window.subidWidget = %subidWidget%;
-window.subidRoot = %subidRoot%;
-window.scenes = [window.subidPanel, window.subidWidget, window.subidRoot];
-
 window.%begin% = function(x, y) {
+
+    window.subidPanel = %subidPanel%;
+    window.subidWidget = %subidWidget%;
+    window.subidRoot = %subidRoot%;
+    window.scenes = [subidPanel, subidWidget, subidRoot];
 
     var activeSub = this.getObj(subidPanel);
 

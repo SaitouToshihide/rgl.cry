@@ -138,8 +138,8 @@ scene2 <- setUserCallbacks("left",
   javascript = js2
 )
 
-rglwidget(width = 0.3 * figWidth(), height = 0.3 * figWidth())
-##rglwidget(scene2, width = 0.3 * figWidth(), height = 0.3 * figWidth())
+##rglwidget(width = 0.3 * figWidth(), height = 0.3 * figWidth())
+rglwidget(scene2, width = 0.3 * figWidth(), height = 0.3 * figWidth())
 ```
 </div>
 
@@ -150,7 +150,12 @@ If an error occurs when specifying a CIF file with the message "Error in sites[i
 In this case, please try the following troubleshooting steps:
 
 1. Refer to GitHub pull request #6: https://github.com/jfoadi/cry/pull/6 for common solutions.
-2. Edit the CIF file.
+2. You can either modify the CIF file or try the patched source here:
+```{r, eval=FALSE, echo=TRUE}
+> remove.packages("cry")
+> library(devtools)
+> devtools::install_github("SaitouToshihide/cry", type="source", ref="2df5dcc")
+```
 
 
 <!-- ------------------------------ -->
