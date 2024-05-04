@@ -351,6 +351,7 @@ dp_demo <- function(file = NULL, reso = 1.2, ews.r = 40, zoom = 0.5, xrd = FALSE
 
     ## Extract the coordinates of the target spot.
     ptmp1 <- unlist(pos[i,])
+    ptmp1 <- ptmp1 / dist(rbind(c(0, 0, 0), ptmp1)) # note: ptmp1 is normalized.
 
     ## 1. Obtain a vector posv perpendicular to the diffraction vector ptmp1 of
     ##    the spot.
@@ -361,7 +362,7 @@ dp_demo <- function(file = NULL, reso = 1.2, ews.r = 40, zoom = 0.5, xrd = FALSE
     ## 4. Normalize the obtained posv.
     ptmp2 <- c(1, 0, 0)
     posv <- pracma::cross(ptmp2, ptmp1)
-    if (abs(posv[1]) < 1e-6 & abs(posv[2]) < 1e-6 & abs(posv[3]) < 1e-6) {
+    if (abs(posv[1]) < 1e-6 && abs(posv[2]) < 1e-6 && abs(posv[3]) < 1e-6) {
       ## Recalculate with a different ptmp2 because there was an NA (failure).
       ptmp2 <- c(0, 1, 0)
       posv <- pracma::cross(ptmp2, ptmp1)
@@ -378,14 +379,9 @@ dp_demo <- function(file = NULL, reso = 1.2, ews.r = 40, zoom = 0.5, xrd = FALSE
     ## of the cone at that position, and posv be the direction. Therefore:
     h <- cos(theta)
     r <- sin(theta)
-    posv <- r * (posv + h * ptmp1)
+    posv <- r * posv + h * ptmp1
 
-    ## I'm not entirely sure how to handle it correctly. I'm still trying to
-    ## figure it out.
-    ##
-    ##posv <- posv + ptmp1 # move to the spot position.
-
-    posvv[[i]] <<- rbind(ptmp1, posv) # for debug only
+    posvv[[i]] <<- rbind(h * ptmp1, posv) # for debug only
     ##if (i == 9 | i == 11) print(h)
     ##if (i == 9 | i == 11) print(r)
     ##if (i == 9 | i == 11) print(posv)
@@ -455,6 +451,9 @@ dp_demo <- function(file = NULL, reso = 1.2, ews.r = 40, zoom = 0.5, xrd = FALSE
     })
     vis <- lapply(dist, function(w) {
       ## Scale the range from 0-0.0333 to 0-1 then subtract from 1.
+      ## Consider ease of implementation over theoretical perfection, always
+      ## applying this principle throughout the codebase.
+      ## Please adjust yourself at the moment.
       v <- 1 - 30 * abs(w - ews.r)
       v <- ifelse(v < 0, 0, v) # Flooring the result to 0.
     })
@@ -524,13 +523,16 @@ dp_demo <- function(file = NULL, reso = 1.2, ews.r = 40, zoom = 0.5, xrd = FALSE
 
       if (s == 0) next # Excluding the origin.
 
+      if (FALSE) next # debug
+
       ## DEBUG: Select the planes.
       ##if (i != 1) next
       ##if (i != 2) next
       ##if (i != 3) next
-      ##if (i != 1 & i != 2) next
-      ##if (i != 1 & i != 2 & i != 3) next
-      ##if (i != 2 & i != 32) next
+      ##if (i != 1 && i != 2) next
+      ##if (i != 1 && i != 2 && i != 3) next
+      ##if (i != 2 && i != 32) next
+      ##if (i != 97 && i != 103) next
       ##print(str)
       ##print(sprintf(posv: "% 2s % 2s % 2s: % 1.20f % 1.20f % 1.20f", hkl[i, 1], hkl[i, 2], hkl[i, 3], posv[i, 1], posv[i, 2], posv[i, 3]))
 
@@ -594,7 +596,7 @@ dp_demo <- function(file = NULL, reso = 1.2, ews.r = 40, zoom = 0.5, xrd = FALSE
       ## cubic_i, res = 3.7.  1 0 0, -1 0 0
       ##if (i == 9 | i == 11) { print(pos[i,]) } # 
       ##if (i == 9 | i == 11) { print(pts[i]) } # 
-      ##if (i == 9 | i == 11) print(ptsR)
+      ##if (i == 9 | i == 11) { print(pts[i]) } # 
       ##if (i == 9 | i == 11) print(posvv[[i]])
       ##print(umat)
 
@@ -618,16 +620,43 @@ dp_demo <- function(file = NULL, reso = 1.2, ews.r = 40, zoom = 0.5, xrd = FALSE
       ## I'm not entirely sure how to handle it correctly. I'm still trying to
       ## figure it out.
       ##
-      ##offz <- 1 # select when posv moved to ptmp1 position.
-      ##offz <- 2 / tan(asin(0.025 / 2)) # when posv is inside the unit sphere.
-      offz <- 1 # easy to see in any case
+      offz <- 1 / tan(asin(0.025 / 2)) # when posv is inside the unit sphere.
 
       rr <- NULL
-      for (j in seq(1, nrow(ptsR))) {
-        t <- -offz / ptsR[j, 3]
-        if (t > 0) {
-          rr <- rbind(rr,
-                      c(0, 0, offz) + t * c(ptsR[j,1], ptsR[j,2], ptsR[j,3]))
+      if (FALSE) {
+        for (j in seq(1, nrow(ptsR))) {
+          t <- -offz / ptsR[j, 3]
+          if (t > 0) {
+            rr <- rbind(rr,
+                        c(0, 0, offz) + t * c(ptsR[j,1], ptsR[j,2], ptsR[j,3]))
+          }
+        }
+      }
+      else if (FALSE) {
+        for (j in seq(1, nrow(ptsR))) {
+          if (t > 0) {
+            rr <- rbind(rr,
+                        c(ptsR[j,1], ptsR[j,2], ptsR[j,3]))
+          }
+        }
+      }
+      else if (FALSE) {
+        for (j in seq(1, nrow(ptsR))) {
+          t <- 1
+          if (t > 0) {
+            rr <- rbind(rr,
+                        c(0, 0, offz) + t * c(ptsR[j,1], ptsR[j,2], ptsR[j,3]))
+          }
+        }
+      }
+      else if (TRUE) {
+        for (j in seq(1, nrow(ptsR))) {
+          t <- -offz / ptsR[j, 3]
+          ##print(t)
+          if (t > 0) {
+            rr <- rbind(rr,
+                        c(0, 0, offz) + t * c(ptsR[j,1], ptsR[j,2], ptsR[j,3]))
+          }
         }
       }
       if (is.null(rr)) next
@@ -655,8 +684,11 @@ dp_demo <- function(file = NULL, reso = 1.2, ews.r = 40, zoom = 0.5, xrd = FALSE
 
       ## Limit the drawing area.
       ## Check the coordinate values within a certain range and get the index.
-      lseq2 <- which(rr[, 1] < 100 & rr[, 2] < 100 &
-                     rr[, 1] > -100 & rr[, 2] > -100)
+      ## use & not &&.
+      lseq2 <- which(rr[, 1] < 100 & rr[, 2] < 100 & rr[, 3] < 100 &
+                     rr[, 1] > -100 & rr[, 2] > -100 & rr[, 3] > -100)
+      ##print(rr)
+      ##print(rr[lseq2,])
       ##print(lseq2)
 
       lseq <- intersect(lseq, lseq2)
@@ -670,21 +702,26 @@ dp_demo <- function(file = NULL, reso = 1.2, ews.r = 40, zoom = 0.5, xrd = FALSE
 
       lseq_diff <- diff(lseq)
       if (length(lseq_diff) == 0) next
+      ##print(lseq_diff)
 
       start <- NULL
       for (j in seq(1, length(lseq_diff))) {
-        if (j == 1) { start <- lseq[j] }
-        else if (j > 2 & lseq_diff[j - 1] == 1) {}
-        else if (j > 2 & lseq_diff[j] == 1) { start <- c(start, lseq[j]) }
+        if (lseq_diff[j] != 1) { }
+        else if (j == 1) {
+          if (length(lseq) == 2) { start <- c(start, lseq[j]) }
+          else if (lseq_diff[j + 1] == 1) { start <- c(start, lseq[j]) }
+        }
+        else if (j > 1 && lseq_diff[j - 1] != 1) { start <- c(start, lseq[j]) }
       }
+      if (is.null(start)) next
       ##print(start)
 
       end <- NULL
       for (j in seq(1, length(lseq_diff))) {
         if (j > 1 && lseq_diff[j - 1] == 1) {
-          if (lseq_diff[j] != 1) { end <- c(end, lseq[j]) }
+          if (lseq_diff[j] != 1 && j != 2) { end <- c(end, lseq[j]) }
         }
-        if (j == length(lseq_diff) & lseq_diff[j] == 1) {
+        if (j == length(lseq_diff) && lseq_diff[j] == 1) {
           end <- c(end, lseq[j + 1])
         }
       }
@@ -700,7 +737,7 @@ dp_demo <- function(file = NULL, reso = 1.2, ews.r = 40, zoom = 0.5, xrd = FALSE
       lapply(lines, function(m) {
 
         rgl::lines3d(m, col = color, alpha = 1, lwd = 1,
-        ##rgl::lines3d(m, col = "black", alpha = 1, lwd = 1,
+        ##rgl::lines3d(m, col = "black", alpha = 1, lwd = 3,
                      tag = paste("rlpoints3", str))
 
         rgl::text3d(m + c(0.0015, 0.0015, 0.0015),
@@ -741,6 +778,29 @@ dp_demo <- function(file = NULL, reso = 1.2, ews.r = 40, zoom = 0.5, xrd = FALSE
         })
         rgl::lines3d(rlines, col = color, lwd = 1, tag = "rlpoints5")
       }
+
+    }
+
+    ## DEBUG: stereographic projection not available
+    if (FALSE) {
+
+      objIds <- rgl::ids3d(tag = TRUE, subscene = 0)
+      objIds <- objIds[grep("^rlpoints[1-5].*", objIds$tag), ]
+      rgl::pop3d(id = objIds$id)
+
+      stproj <- NULL
+      stproj <- rbind(stproj, t(apply(pos, 1, function(m) {
+        m / dist(rbind(c(0, 0, 0), m))
+      })))
+
+      rgl::spheres3d(stproj, r = 0.021,
+                     color = "purple", alpha = 1,
+                     tag = "rlpoints1")
+
+      str <- paste(hkl$H, hkl$K, hkl$L)
+      rgl::text3d(sweep(stproj, 2, (text.offset %*% umat[1:3, 1:3]), "+"),
+                  texts = str, cex = 0.8, col = "blue", alpha = 1,
+                  tag = "rlpoints2")
 
     }
 
@@ -812,7 +872,8 @@ dp_demo <- function(file = NULL, reso = 1.2, ews.r = 40, zoom = 0.5, xrd = FALSE
 
   ## Place the dummy sphere to prevent the draw area from modification.
   ## r=0 is prevention of protrusion.
-  rgl::spheres3d(frame, r = 0, color = "green", alpha = 0) #
+  rgl::spheres3d(100*frame, r = 0, color = "green", alpha = 0) #
+  rgl::par3d(zoom = 0.01) #
 
   ## center
   oo <- c(0, 0, 0)
