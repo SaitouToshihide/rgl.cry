@@ -2,16 +2,31 @@
 // The Javascript functions for mouse callback in WebGL.
 // 
 
+// Variables placed in this position will be set before the event occurs.
+// Avoid overwriting them.
+window.dpPanel = %dpPanel%;
+window.dpWidget = %dpWidget%;
+window.dpRoot = %dpRoot%;
+window.idpoints = %idpoints%;
+window.cryPanel = %cryPanel%;
+window.cryWidget = %cryWidget%;
+window.cryRoot = %cryRoot%;
+
+
 window.%begin% = function(x, y) {
 
-    window.subidPanel = %subidPanel%;
-    window.subidWidget = %subidWidget%;
-    window.subidRoot = %subidRoot%;
-    window.scenes = [window.subidPanel, window.subidWidget, window.subidRoot];
+    // I wasn't sure how to retrieve the rglwidgetClass object directly from
+    // another widget instance, although I realized saving and retrieving the
+    // object is possible. At this time, the object is retrieved from the HTML
+    // page at the load event listener.
+    //window.dpObj = this;	// rglwidgetClass Object
 
-    window.idpoints = %idpoints%
 
-    var activeSub = this.getObj(subidPanel);
+    // Make it visible in update() or end()
+    window.dpScenes = [dpPanel, dpWidget, dpRoot];
+    window.cryScenes = [cryPanel, cryWidget, cryRoot];
+
+    let activeSub = this.getObj(dpPanel);
 
     if (typeof this.userSave === "undefined") {
         this.userSave = {  }
@@ -28,12 +43,12 @@ window.%begin% = function(x, y) {
         cursor:this.canvas.style.cursor });
 
     if (time_difference > 100 & time_difference < 200) {
-        for (let item of scenes) {
+        for (let item of dpScenes) {
             activeSub = this.scene.objects[item];
             activeSub.par3d.userMatrix.makeIdentity();
             this.drawScene();
         }
-		// ------------------------------------------------------------
+
 		let ews_r = 37;
 		let ews_pos = [0, 0, ews_r, 0];
 		let ews_pos_new = rglwidgetClass.multVM(ews_pos, activeSub.par3d.userMatrix);
@@ -52,11 +67,20 @@ window.%begin% = function(x, y) {
 			spheres.initialized = false;
 		}
 		this.drawScene();
+
 		// ------------------------------------------------------------
+
+		let crySub = cryObj.getObj(cryPanel);
+		for (let item of cryScenes) {
+			crySub = cryObj.scene.objects[item];
+			crySub.par3d.userMatrix.makeIdentity();
+			cryObj.drawScene();
+		}
+
     }
 
-    // save the userMatrix.
-    for (let item of scenes) {
+    // load the initial userMatrix.
+    for (let item of dpScenes) {
         activeSub = this.scene.objects[item];
         activeSub.userSaveMat = new CanvasMatrix4(activeSub.par3d.userMatrix);
     }
@@ -67,25 +91,23 @@ window.%begin% = function(x, y) {
 
 window.%update% = function(x, y) { 
 
-    var activeSub = this.getObj(subidPanel);
+    let activeSub = this.getObj(dpPanel);
 
     let objects = this.scene.objects,
         viewport = this.userSave.viewport,
         par3d;
 
-	console.log(x, " ", this.userSave.x);
     x = (x - this.userSave.x) / this.canvas.width * 20; // degree ? 
     y = (y - this.userSave.y) / this.canvas.height * 20;
 
-    for (let item of scenes) {
+	let userSaveMat = objects[dpPanel].userSaveMat; // all the same, select one.
+    for (let item of dpScenes) {
         activeSub = this.scene.objects[item];
-        activeSub.par3d.userMatrix.load(objects[item].userSaveMat);
+        activeSub.par3d.userMatrix.load(userSaveMat);
         activeSub.par3d.userMatrix.rotate(x, 0, 1, 0);
         activeSub.par3d.userMatrix.rotate(y, -1, 0, 0);
-        this.drawScene();
     }
 
-	// ------------------------------------------------------------
 	let ews_r = 37;
 	let ews_pos = [0, 0, ews_r, 0];
 	let ews_pos_new = rglwidgetClass.multVM(ews_pos, activeSub.par3d.userMatrix);
@@ -104,7 +126,18 @@ window.%update% = function(x, y) {
 		spheres.initialized = false;
 	}
 	this.drawScene();
+
 	// ------------------------------------------------------------
+
+	let crySub = cryObj.getObj(cryPanel);
+	for (let item of cryScenes) {
+		crySub = cryObj.scene.objects[item];
+		crySub.par3d.userMatrix.load(userSaveMat);
+		crySub.par3d.userMatrix.rotate(x,  0, 1, 0);
+		crySub.par3d.userMatrix.rotate(y,  -1, 0, 0);
+	}
+	cryObj.drawScene();
+
 };
 
 

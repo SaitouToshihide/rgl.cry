@@ -32,6 +32,20 @@ knit_hooks$set(webgl = hook_webgl)
 setupKnitr(autoprint = FALSE) # for settings to override mouse callback
 ```
 
+```{css, echo=FALSE}
+div.myfig1 {
+  margin: 3% 3%;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+div.mycap1 {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+```
+
 <!-- ------------------------------------------------------------ -->
 # rgl.cry
 
@@ -67,79 +81,90 @@ cry_demo()
 The following is a working snapshot.
 Note that while this WebGL graphics is interactive, the behavior is simulated using JavaScript instead of being processed in actual R.
 
-<div style="margin: 5% 5%; display: flex; justify-content: space-around; margin: none;">
 <!--
 <img width="35%" src="{{site.baseurl | prepend: site.url}}/images/dp_demo.png" alt="dp_demo() snapshot" />
 <img width="35%" src="{{site.baseurl | prepend: site.url}}/images/cry_demo.png" alt="dp_demo() snapshot" />
  -->
 
+<div class="myfig1">
 ```{r}
-## first figure
-null <- dp_demo()
 
+## First figure
+null <- dp_demo()
+rgl::pop3d(tag = c("rlpoints0", "rlpoints2"))
+objIds <- rgl::ids3d(tag = TRUE, subscene = 0)
+objIds <- objIds[(objIds$tag == "rlpoints1"), ]$id
 dp.panel.id <- subsceneInfo()$id
 dp.widget.id <- subsceneInfo()$parent
 useSubscene3d(dp.widget.id)
 dp.root.id <- subsceneInfo()$parent
 useSubscene3d(dp.panel.id)
-## 26 15 7
+dp.scene3d <- scene3d(minimal = FALSE)
+
+## Second figure
+null <- cry_demo()
+cry.panel.id <- subsceneInfo()$id
+cry.widget.id <- subsceneInfo()$parent
+useSubscene3d(cry.widget.id)
+cry.root.id <- subsceneInfo()$parent
+useSubscene3d(cry.panel.id)
+cry.scene3d <- scene3d(minimal = FALSE)
+
+
+## Callback function settings
 
 js1 <- readLines("cb_dp.js")
-js1 <- sub("%subidPanel%", dp.panel.id, js1)
-js1 <- sub("%subidWidget%", dp.widget.id, js1)
-js1 <- sub("%subidRoot%", dp.root.id, js1)
+js1 <- sub("%dpPanel%", dp.panel.id, js1)
+js1 <- sub("%dpWidget%", dp.widget.id, js1)
+js1 <- sub("%dpRoot%", dp.root.id, js1)
+js1 <- sub("%idpoints%", objIds, js1)
+js1 <- sub("%cryPanel%", cry.panel.id, js1)
+js1 <- sub("%cryWidget%", cry.widget.id, js1)
+js1 <- sub("%cryRoot%", cry.root.id, js1)
 js1 <- sub("%begin%", "begin1", js1)
 js1 <- sub("%update%", "update1", js1)
 js1 <- sub("%end%", "end1", js1)
 
-pop3d(tag = c("rlpoints0", "rlpoints2"))
-objIds <- rgl::ids3d(tag = TRUE, subscene = 0)
-objIds <- objIds[(objIds$tag == "rlpoints1"), ]$id
-js1 <- sub("%idpoints%", objIds, js1)
+js2 <- readLines("cb_cry.js")
+js2 <- sub("%cryPanel%", cry.panel.id, js2)
+js2 <- sub("%cryWidget%", cry.widget.id, js2)
+js2 <- sub("%cryRoot%", cry.root.id, js2)
+js2 <- sub("%idpoints%", objIds, js2)
+js2 <- sub("%dpPanel%", dp.panel.id, js2)
+js2 <- sub("%dpWidget%", dp.widget.id, js2)
+js2 <- sub("%dpRoot%", dp.root.id, js2)
+js2 <- sub("%begin%", "begin2", js2)
+js2 <- sub("%update%", "update2", js2)
+js2 <- sub("%end%", "end2", js2)
 
 scene1 <- setUserCallbacks("left",
   begin = "begin1",
   update = "update1",
   end = "end1",
-  scene = scene3d(minimal = FALSE),
+  scene = dp.scene3d,
   subscene = dp.panel.id,
   applyToScene = TRUE,
   applyToDev = FALSE,
   javascript = js1
 )
 
-rglwidget(scene1, width = 0.3 * figWidth(), height = 0.3 * figWidth())
-
-## second figure
-null <- cry_demo()
-
-cry.panel.id <- subsceneInfo()$id
-cry.widget.id <- subsceneInfo()$parent
-useSubscene3d(cry.widget.id)
-cry.root.id <- subsceneInfo()$parent
-useSubscene3d(cry.panel.id)
-
-js2 <- readLines("cb_cry.js")
-js2 <- sub("%subidPanel%", cry.panel.id, js2)
-js2 <- sub("%subidWidget%", cry.widget.id, js2)
-js2 <- sub("%subidRoot%", cry.root.id, js2)
-js2 <- sub("%begin%", "begin2", js2)
-js2 <- sub("%update%", "update2", js2)
-js2 <- sub("%end%", "end2", js2)
-
 scene2 <- setUserCallbacks("left",
   begin = "begin2",
   update = "update2",
   end = "end2",
-  scene = scene3d(minimal = FALSE),
+  scene = cry.scene3d,
   subscene = cry.panel.id,
   applyToScene = TRUE,
   applyToDev = FALSE,
   javascript = js2
 )
-
-##rglwidget(width = 0.3 * figWidth(), height = 0.3 * figWidth())
-rglwidget(scene2, width = 0.3 * figWidth(), height = 0.3 * figWidth())
+```
+```{r}
+rglwidget(scene1, width = 0.3*figWidth(), height = 0.3*figWidth())
+```
+<div style="width: 15%;"></div>
+```{r}
+rglwidget(scene2, width = 0.3*figWidth(), height = 0.3*figWidth())
 ```
 </div>
 
@@ -278,3 +303,39 @@ mtext(~ italic("I"), side = 2, line = 3)
 ## Acknowledgment
 
 I would like to express my gratitude to the rgl, cry packages, and R for making this work possible.  The data for the scattering factors is based on the data from the KEK Report @sc_table_kek.  For the coloring of the atoms, I used @mol_color, and for the atomic radii, I used @enwiki:1179864711.
+
+<!-- ------------------------------ -->
+
+## Features under consideration
+
+I'm considering implementing Kikuchi line drawing for my studies at <a href="https://github.com/SaitouToshihide/rgl.cry/tree/DiffractionCone">https://github.com/SaitouToshihide/rgl.cry/tree/DiffractionCone</a> and <a href="https://saitoutoshihide.github.io/rgl.cry/features.html">my study zone</a>.
+
+<div class="myfig1">
+<div style="width: 35%; height: 35%;">
+![BCC structure along the [0 0 1] axis.](./images/cubic_i_01.png){width=90%}
+</div>
+<div style="width: 15%;"></div>
+<div style="width: 35%; height: 35%;">
+![A zoomed-in view.](./images/cubic_i_02.png){width=90%}
+</div>
+</div>
+
+<!-- ------------------------------ -->
+
+<script>
+  window.addEventListener("load", function () {
+
+      const widgets = document.getElementsByClassName("rglWebGL html-widget");
+
+      for (const item of widgets) {
+        root = item.rglinstance.scene.rootSubscene;
+        if (root == window.cryRoot) {
+          window.cryObj = item.rglinstance
+        }
+        else if (root == window.dpRoot) {
+          window.dpObj = item.rglinstance
+        }
+      }
+
+  });
+</script>
