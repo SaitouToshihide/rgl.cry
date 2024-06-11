@@ -30,19 +30,25 @@ The ``dp_demo()`` function also performs simple simulations of powder X-ray diff
 
 The package has been tested on several platforms, including Linux on Crostini with a Core™ m3-8100Y Chromebook, I found that even on this low-powered platform, the performance was acceptable.
 
+
+## Web Resources
+
+https://saitoutoshihide.github.io/rgl.cry/
+
+
 ## Installation
 ```{r, eval=FALSE, echo=TRUE}
 install.packages("rgl.cry")
 ```
 
 ## Example
-A CIF file is read. A reciprocal lattice map with a cell widget drawn.
-In this example, a file is not specified.  Therefore, a system default is used.
+A CIF file is read, and a reciprocal lattice map with a cell widget is drawn.
+In this example, a file is not specified, so the system default is used.
 ```{r, eval=FALSE, echo=TRUE}
 dp_demo()
 ```
 
-A CIF file is read. A crystal structure with a axis widget drawn.
+A CIF file is read, and a crystal structure with a axis widget is drawn.
 ```{r, eval=FALSE, echo=TRUE}
 cry_demo()
 ```
@@ -52,7 +58,7 @@ cry_demo()
 The crystal and diffraction pattern are aligned and displayed.
 ```{r, eval=FALSE, echo=TRUE}
 align("a")
-align("c*")
+align("ra")
 align("30 30") # x, y (deg)
 ```
 
@@ -78,7 +84,7 @@ To finish, press ESC.
 
 ### Extras
 ``dp_demo()`` can perform PXRD pattern simulation.
-The result is putted as a file on the current directory by specifying options like this:
+The result is saved as a file in the current directory by specifying options like this:
 ```{r, eval=FALSE, echo=TRUE}
 ## Output the simulation results of the PXDR pattern as a file.
 dp_demo(xrd = TRUE)

@@ -179,7 +179,7 @@ In this case, please try the following troubleshooting steps:
 ```{r, eval=FALSE, echo=TRUE}
 > remove.packages("cry")
 > library(devtools)
-> devtools::install_github("SaitouToshihide/cry", type="source", ref="2df5dcc")
+> install_github("SaitouToshihide/cry", type="source", ref="2df5dcc")
 ```
 
 
@@ -189,7 +189,7 @@ In this case, please try the following troubleshooting steps:
 The crystal and diffraction pattern are aligned and displayed.
 ```{r, eval=FALSE, echo=TRUE}
 align("a")
-align("c*")
+align("ra")
 align("30 30") # x, y (deg)
 ```
 
