@@ -1,22 +1,22 @@
-## Test environments
+## 0.1.1
 
-* local: x86_64-pc-linux-gnu
+This is a bugfix release.
+
+
+Test environments:
+
+
+* devtools::check(): x86_64-pc-linux-gnu
 
          0 errors ✔ | 0 warnings ✔ | 0 notes ✔
 
 
-* r-hub: Ubuntu Linux 20.04.1 LTS, R-release, GCC
-         Fedora Linux, R-devel, clang, gfortran
+* devtools::check_rhub(): linux, macos, macos-arm64, windows
 
-         0 errors ✔ | 0 warnings ✔ | 3 notes ✖
+        ✔ paleoclimatological-uintagroundsquirrel: linux, macos, macos-arm64, windows #6
+        https://github.com/SaitouToshihide/rgl.cry/actions/runs/9501430912
 
 
 * win-builder: x86_64-w64-mingw32
 
-         Status: 3 NOTE
-
-
-## revdepcheck results
-
-This is the first release.
-
+         Status: 1 NOTE
