@@ -3,6 +3,10 @@
 # rgl.cry
 
 <!-- badges: start -->
+
+[![CRAN
+status](https://www.r-pkg.org/badges/version/rgl.cry)](https://CRAN.R-project.org/package=rgl.cry)
+[![R-CMD-check](https://github.com/SaitouToshihide/rgl.cry/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/SaitouToshihide/rgl.cry/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 This is a use case for the `cry` and `rgl` packages. This package
