@@ -17,6 +17,10 @@
 #' @param type A style of atom displaying such like ball, fill and ball-stick
 #' but ball-stick is not implemented.
 #' @param zoom A positive value indicating the current scene magnification.
+#' @param abc A length-3 integer vector of repetitions along the a, b, c axes.
+#' @param clipplanes A list of numeric vectors representing clip planes. Each
+#' vector should contain four elements (a, b, c, d).  Round the values to one
+#' decimal places before making the final determination in the internal process.
 #'
 #' @return An integer the device number of the currently window.
 #'
@@ -24,16 +28,63 @@
 #'
 #' @examples
 #' cry_demo()
+#'
 #' cry_demo(system.file("orthorhombic_p.cif", package = "rgl.cry"))
 #'
+#' cry_demo(system.file("rhombohedral_r.cif", package = "rgl.cry"), abc = c(1,1,1),
+#'   clipplanes = rbind(c(2.885490, 4.158112, -3.374928, -37.01),
+#'                       c(2.885490, -5.082574, 1.687449, -37.01),
+#'                       c(-5.7709802, 0.9244616, 1.6874797, -37.01),
+#'                       c(-2.885490, -4.158112, 3.374928, -37.01),
+#'                       c(-2.885490, 5.082574, -1.687449, -37.01),
+#'                       c(5.7709802, -0.9244616, -1.6874797, -37.01),
+#'                       c(5.771090, 8.316383, 15.180433, -332.92),
+#'                       c(-5.771090, -8.316383, -15.180433, 0.01)))
 #' \donttest{
 #' if (interactive()) {
-#'  cry_demo(file, type = "fill", zoom = 0.5)
-#'  cry_demo("https://www.crystallography.net/cod/foo.cif")
+#'   cry_demo(file, type = "fill", zoom = 0.5)
+#'   cry_demo("https://www.crystallography.net/cod/foo.cif")
+#'
+#'
+#'   ## A rhombohedral crystal.
+#'   cry_demo(system.file("rhombohedral_r.cif", package = "rgl.cry"))
+#'
+#'   ## Extract crystal structure data from the internal processing of the package.
+#'   library(pryr)
+#'   lCIF <- rgl.cry:::pkg$inst[[nrow(rgl.cry:::pkg$inst), "lCIF"]]
+#'   a <- lCIF$HEADER$CELL$A$VAL
+#'   b <- lCIF$HEADER$CELL$B$VAL
+#'   c <- lCIF$HEADER$CELL$C$VAL
+#'   aa <- lCIF$HEADER$CELL$ALPHA$VAL # degree
+#'   bb <- lCIF$HEADER$CELL$BETA$VAL
+#'   cc <- lCIF$HEADER$CELL$GAMMA$VAL
+#'   mat02 <- cry::xtal_mat02(a, b, c, aa, bb, cc)
+#'
+#'   ea1 <- as.numeric(c(1, 0, 0) %*% mat02) # lattice vector
+#'   ea2 <- as.numeric(c(0, 1, 0) %*% mat02)
+#'   ea3 <- as.numeric(c(0, 0, 1) %*% mat02)
+#'   ec3 <- ea1 + ea2 + ea3  # c-axis in a hexagonal crystal.
+#'
+#'   ## a_hex is calculated as a - b, b_hex as b - c, and one of the clip planes is denoted as
+#'   ## (a_hex + (a_hex + b_hex)) / 2 = a - b + a - b + b - c = 2a - b - c = a - (b + c) / 2.
+#'   cp1 <- ea1 - (ea2 + ea3)/2
+#'   cp2 <- ea2 - (ea3 + ea1)/2
+#'   cp3 <- ea3 - (ea1 + ea2)/2
+#'
+#'   cry_demo(system.file("rhombohedral_r.cif", package = "rgl.cry"), abc = c(1,1,1),
+#'          clipplanes = rbind(
+#'            c(cp1, -crossprod(cp1)),
+#'            c(cp2, -crossprod(cp2)),
+#'            c(cp3, -crossprod(cp3)),
+#'            c(-cp1, -crossprod(cp1)),
+#'            c(-cp2, -crossprod(cp2)),
+#'            c(-cp3, -crossprod(cp3)),
+#'            c(ec3, -crossprod(ec3)),
+#'            c(-ec3, 0)))
 #' }
 #' }
-cry_demo <- function(file = NULL, rf = 1, type = "b", zoom = 1) {
-  list(file = file, rf = rf, type = type, zoom = zoom)
+cry_demo <- function(file = NULL, rf = 1, type = "b", zoom = 1, abc = c(0, 0, 0), clipplanes = rbind(c(0,0,0,0))) {
+  list(file = file, rf = rf, type = type, zoom = zoom, abc = abc, clipplanes = clipplanes)
 
   ##
   num <- NULL # Number of labeled atom.
@@ -73,6 +124,7 @@ cry_demo <- function(file = NULL, rf = 1, type = "b", zoom = 1) {
 
   uc <- cry::create_unit_cell(a, b, c, aa, bb, cc)
   ruc <- cry::create_rec_unit_cell(uc)
+
 
   ##
   num <- dim(lCIF$COOR$VAL)[1] # Number of non-equivalent atoms.
@@ -204,15 +256,15 @@ cry_demo <- function(file = NULL, rf = 1, type = "b", zoom = 1) {
     c(1, 1, 0), c(1, 1, 1)
   )
   for (i in seq_len(num)) {
-    tmp <- matrix(apply(dir26, 1, function(v) {
+    tmp <- apply(dir26, 1, function(v) {
       apply(pos.cry[[i]], 1, function(w) v + w)
-    }), ncol = 3, byrow = TRUE)
-
+    })
+    tmp <- matrix(tmp, ncol = 3, byrow = TRUE)
     tmp <- unique(tmp)
     pos.cry[[i]] <- rbind(pos.cry[[i]], tmp)
   }
 
-  ## Expands the ROI by the specified percentage.
+  ## Expands the ROI by the specified fraction.
   e <- 0
   for (i in seq_len(num)) {
     pos.cry[[i]] <-
@@ -231,6 +283,37 @@ cry_demo <- function(file = NULL, rf = 1, type = "b", zoom = 1) {
 
   ## remove duplication
   for (i in seq_len(num)) pos.cry[[i]] <- unique(pos.cry[[i]])
+
+
+  ## Repeat the unit cell along each axis based on user input.
+  ##abc <- c(2, 1, 1)
+
+  for (i in seq_len(num)) {
+    for (k in 1:3) {  # Iterate over a, b, and c directions.
+      if (abc[k] == 0) next
+      shift_values <- seq_len(abc[k])
+      positive <- pos.cry[[i]][, k] > 0  # Exclude rows at the boundary.
+      negative <- pos.cry[[i]][, k] < 1  #
+
+      ## Atoms coordinate.
+      positive_atoms <- pos.cry[[i]][positive, , drop = FALSE]
+      negative_atoms <- pos.cry[[i]][negative, , drop = FALSE]
+
+      ## Translate along a, b, or c axis.
+      positive_atoms[, k] <- positive_atoms[, k] + shift_values
+      negative_atoms[, k] <- negative_atoms[, k] - shift_values
+
+      ## Combine the original and translated atom coordinates.  Unique is not
+      ## necessary because there are no duplicates.
+      pos.cry[[i]] <- rbind(pos.cry[[i]], positive_atoms, negative_atoms)
+    }
+  }
+
+
+  ## remove duplication
+  ##for (i in seq_len(num)) pos.cry[[i]] <- unique(pos.cry[[i]])
+
+
 
 
   ## Transform to Cartesian coordinates and store in pos.
@@ -254,8 +337,47 @@ cry_demo <- function(file = NULL, rf = 1, type = "b", zoom = 1) {
   }
 
 
+
+  ## Clip the view volume with planes.
+  ##
+  ## Due to limitations in OpenGL drivers, `clipplanes3d` can only utilize a
+  ## restricted number of planes.  This code provides an alternative method for
+  ## clipping a volume.
+  ##
+  ## The equation ax + by + cz + d = 0 represents a plane in 3D space.  If this
+  ## plane passes through the point (a, b, c), then d = -(a^2 + b^2 + c^2).
+  ## To define such a plane, specify it as c(a, b, c, -crossprod(c(a, b, c))).
+  ## The direction of the normal vector determines which side of the plane is
+  ## clipped.  If the plane passes through the origin (0, 0, 0), d becomes 0.
+  ##
+  ## To determine whether an atom's coordinates are inside or outside the clip
+  ## plane, we compare the dot product of the plane's normal vector and the
+  ## atom's position vector with the distance from the origin to the plane.
+  ##
+  ## Round to one decimal places before comparison.
+
+  for (v in seq_len(nrow(clipplanes))) {
+    d <- clipplanes[v, 4]
+    norm <- clipplanes[v, 1:3]
+    for (i in seq_len(num)) {
+      pos[[i]] <- subset(
+        pos[[i]],
+        apply(pos[[i]], 1, function(r) {
+          all(round(crossprod(norm, r) + d, digits = 1) <= 0)
+        })
+      )
+    }
+  }
+
+
+
+
   ## Calculate distance between each atom.
-  conn <- measureDistance(pos)
+  ##
+  ## As the number of atoms increases, the computational load becomes too heavy
+  ## unless calculations are performed only when necessary.
+  ##
+  ##conn <- measureDistance(pos)
 
 
 

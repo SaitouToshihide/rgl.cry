@@ -15,6 +15,7 @@ Imports:
     cry,
     pracma,
     rgl,
+    pryr,
     utils
 Collate: 
     'zzz.R'
