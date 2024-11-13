@@ -133,8 +133,7 @@ align <- function(ax, dev = NULL, verbose = TRUE) {
     if (tmp[2] != 0) {
       rotX <- acos(tmp[3] / norm(tmp, "2")) # Angle between tgt. and z.
       rotX <- ifelse(tmp[2] > 0, -rotX, rotX) #
-    }
-    else {
+    } else {
       rotX <- 0
     }
     umatX <- rgl::rotationMatrix(rotX, 1, 0, 0) # rot. mat. around the x axis.
@@ -144,8 +143,7 @@ align <- function(ax, dev = NULL, verbose = TRUE) {
     if (tmp[1] != 0) {
       rotY <- acos(tmp[3] / norm(tmp, "2"))
       rotY <- ifelse(tmp[1] > 0, rotY, -rotY) #
-    }
-    else {
+    } else {
       rotY <- 0
     }
     umatY <- rgl::rotationMatrix(rotY, 0, 1, 0) # rotation around the y axis
@@ -160,10 +158,17 @@ align <- function(ax, dev = NULL, verbose = TRUE) {
 
     xyzf <- matrix(c(1, 0, 0, 0, 1, 0, 0, 0, 1), ncol = 3, byrow = TRUE) #
     xyzf <- do.call(as.numeric, strsplit(ax, " "))
-    xyzr <- cry::frac_to_orth(
-      xyzf, ruc$ar, ruc$br, ruc$cr,
-      ruc$alpha, ruc$beta, ruc$gamma, 2
-    )
+    if (!is.na(cry.dev)) {
+      xyzr <- cry::frac_to_orth(
+        xyzf, uc$a, uc$b, uc$c,
+        uc$alpha, uc$beta, uc$gamma, 2
+      )
+    } else if (!is.na(dp.dev)) {
+      xyzr <- cry::frac_to_orth(
+        xyzf, ruc$ar, ruc$br, ruc$cr,
+        ruc$alpha, ruc$beta, ruc$gamma, 2
+      )
+    }
     e <- matrix(unlist(xyzr), ncol = 3, byrow = FALSE)
 
     tmp <- e * c(0, 1, 1) # Project the axis to the yz-plane.
