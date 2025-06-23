@@ -26,6 +26,8 @@
 #' value.
 #' @param ews.r Ewald sphere radius in angstrom^-1.
 #' @param zoom A positive value indicating the current scene magnification.
+#' @param hkl_labels A logical value indecating whether to show or hide the hkl
+#' index labels.  Defaults to `TRUE`.
 #' @param xrd A logical value indicating whether to create an X-ray diffraction
 #' pattern simulation result file.
 #'
@@ -44,9 +46,9 @@
 #'  dp_demo("https://www.crystallography.net/cod/foo.cif")
 #' }
 #' }
-dp_demo <- function(file = NULL, reso = 1.2, ews.r = 40, zoom = 0.5, xrd = FALSE) {
+dp_demo <- function(file = NULL, reso = 1.2, ews.r = 40, zoom = 0.5, hkl_labels = TRUE, xrd = FALSE) {
 
-  list(file = file, reso = reso, ews.r = ews.r, zoom = zoom, xrd = xrd)
+  list(file = file, reso = reso, ews.r = ews.r, zoom = zoom, hkl_labels = hkl_labels, xrd = xrd)
 
   ## File or lCIF object to use.
   if (!is.null(file)) {
@@ -358,6 +360,9 @@ dp_demo <- function(file = NULL, reso = 1.2, ews.r = 40, zoom = 0.5, xrd = FALSE
       r = 0.01, color = "black",
       alpha = vis, tag = "rlpoints1"
     )
+
+    if (isFALSE(hkl_labels)) return()
+
     str <- paste(hkl$H, hkl$K, hkl$L)
     rgl::text3d(sweep(pos, 2, (text.offset %*% umat[1:3, 1:3]), "+"),
       texts = str, cex = 0.8, col = "blue", alpha = vis, tag = "rlpoints2"

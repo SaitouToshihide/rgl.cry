@@ -4,7 +4,14 @@
 \alias{dp_demo}
 \title{Examples of using the cry and rgl packages together.}
 \usage{
-dp_demo(file = NULL, reso = 1.2, ews.r = 40, zoom = 0.5, xrd = FALSE)
+dp_demo(
+  file = NULL,
+  reso = 1.2,
+  ews.r = 40,
+  zoom = 0.5,
+  hkl_labels = TRUE,
+  xrd = FALSE
+)
 }
 \arguments{
 \item{file}{Optional file in CIF formats.}
@@ -17,6 +24,9 @@ value.}
 \item{ews.r}{Ewald sphere radius in angstrom^-1.}
 
 \item{zoom}{A positive value indicating the current scene magnification.}
+
+\item{hkl_labels}{A logical value indecating whether to show or hide the hkl
+index labels.  Defaults to \code{TRUE}.}
 
 \item{xrd}{A logical value indicating whether to create an X-ray diffraction
 pattern simulation result file.}
