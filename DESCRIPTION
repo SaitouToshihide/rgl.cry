@@ -10,13 +10,14 @@ Description: Visualizing crystal structures and selected area electron diffracti
 License: GPL (>= 2)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.1
+RoxygenNote: 7.3.2
 Imports: 
     cry,
     pracma,
     rgl,
-    pryr,
     utils
+Depends:
+    R (>= 4.5.0)
 Collate: 
     'zzz.R'
     'cry_demo.R'
@@ -26,6 +27,7 @@ Collate:
     'select.R'
     'rgl.cry-package.R'
 Suggests: 
+    pryr,
     knitr,
     rmarkdown,
     spelling,
