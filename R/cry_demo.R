@@ -377,7 +377,9 @@ cry_demo <- function(file = NULL, rf = 1, type = "b", zoom = 1, abc = c(0, 0, 0)
   ## As the number of atoms increases, the computational load becomes too heavy
   ## unless calculations are performed only when necessary.
   ##
-  ##conn <- measureDistance(pos)
+  conn <- measureDistance(pos)
+  #print(conn)
+
 
 
 
