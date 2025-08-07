@@ -499,7 +499,7 @@ cry_demo <- function(file = NULL, rf = 1, type = "b", zoom = 1, abc = c(0, 0, 0)
   ## Place the dummy sphere to prevent the draw area from modification.
   ## r=0 is prevention of protrusion.
   rgl::spheres3d(100*frame, r = 0, color = "green", alpha = 0) #
-  rgl::par3d(zoom = 0.2) #
+  rgl::par3d(zoom = 0.02) #
 
   ## Axis widget
   oo <- c(0, 0, 0)
@@ -507,18 +507,20 @@ cry_demo <- function(file = NULL, rf = 1, type = "b", zoom = 1, abc = c(0, 0, 0)
   a2 <- as.vector(t(c(0, 1, 0) %*% mat01))
   a3 <- as.vector(t(c(0, 0, 1) %*% mat01))
 
+  a_max <- max(a1, a2, a3)
+  a1 <- a1 / a_max
+  a2 <- a2 / a_max
+  a3 <- a3 / a_max  
+
   lines <- rbind(oo, a1, oo, a2, oo, a3)
   rgl::segments3d(lines,
     col = rbind("red", "red", "green", "green", "blue", "blue"),
     lwd = 2
   )
 
-  a0 <- as.vector(t(c(2, 0, 0) %*% mat01))
-  b0 <- as.vector(t(c(0, 2, 0) %*% mat01))
-  c0 <- as.vector(t(c(0, 0, 2) %*% mat01))
-  rgl::text3d(a0, texts = "a", cex = 1.0, col = "black")
-  rgl::text3d(b0, texts = "b", cex = 1.0, col = "black")
-  rgl::text3d(c0, texts = "c", cex = 1.0, col = "black")
+  rgl::text3d(a1 + c(0.5, 0, 0), texts = "a", cex = 1.0, col = "black")
+  rgl::text3d(a2 + c(0, 0.5, 0), texts = "b", cex = 1.0, col = "black")
+  rgl::text3d(a3 + c(0, 0, 0.5), texts = "c", cex = 1.0, col = "black")
 
 
   ## ------------------------------------------------------------
