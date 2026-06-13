@@ -32,65 +32,79 @@ knit_hooks$set(webgl = hook_webgl)
 setupKnitr(autoprint = FALSE) # for settings to override mouse callback
 ```
 
+```{css, echo=FALSE}
+div.myfig1 {
+  margin: 3% 3%;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+div.mycap1 {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+```
+
+
 <!-- ------------------------------------------------------------ -->
 ## Kikuchi line drawing
 
 I'm considering implementing Kikuchi line drawing for my studies at <a href="https://github.com/SaitouToshihide/rgl.cry/tree/DiffractionCone">https://github.com/SaitouToshihide/rgl.cry/tree/DiffractionCone</a>.
 
 ```{r, eval=FALSE, echo=TRUE}
-  dp_demo(system.file("cubic_i.cif", package = "rgl.cry"), zoom = 0.03, res = 1.3)
-  ##rgl::snapshot3d("cubic_i_01.png", fmt="png", width=500, height=500, webshot = FALSE)
-  dp_demo(system.file("cubic_i.cif", package = "rgl.cry"), zoom = 0.0005, res = 1.3)
-  ##rgl::snapshot3d("cubic_i_02.png", fmt="png", width=500, height=500, webshot = FALSE)
+dp_demo(system.file("cubic_i.cif", package = "rgl.cry"), zoom = 0.03, res = 1.3)
+##rgl::snapshot3d("cubic_i_01.png", fmt="png", width=500, height=500, webshot = FALSE)
+dp_demo(system.file("cubic_i.cif", package = "rgl.cry"), zoom = 0.0005, res = 1.3)
+##rgl::snapshot3d("cubic_i_02.png", fmt="png", width=500, height=500, webshot = FALSE)
 ```
-<div style="margin: 3% 15%; display: flex; flex-wrap: wrap; justify-content: center;">
-<div style="width: 45%; height: 45%;">
+<div class="myfig1">
+<div style="width: 35%; height: 35%;">
 ![Kikuchi lines of BCC structure along the [0 0 1] axis.](./images/cubic_i_01.png){width=100%}
 </div>
-<div style="width: 10%;"></div>
-<div style="width: 45%; height: 45%;">
+<div style="width: 15%;"></div>
+<div style="width: 35%; height: 35%;">
 ![A zoomed-in view.](./images/cubic_i_02.png){width=100%}
 </div>
-<div style="justify-content: center;">Images while debugging.</div>
+<div class="mycap1">Images while debugging.</div>
 </div>
 
 #### Installation
 ```{r, eval=FALSE, echo=TRUE}
-  library(devtools)
+library(devtools)
 
-  install_github("SaitouToshihide/rgl.cry", ref="b2638c7")
+install_github("SaitouToshihide/rgl.cry", ref="5e63cad")
 ```
 
 #### Usage.
 Run ``dp_demo()``.
 ```{r, eval=FALSE, echo=TRUE}
-  dp_demo() # default CIF data are loaded.
+dp_demo() # default CIF data are loaded.
 ```
 Let's see another crystal system.
 ```{r, eval=FALSE, echo=TRUE}
-  dp_demo(system.file("triclinic_p.cif", package = "rgl.cry"), zoom = 0.03, res = 2.0)
-  ##rgl::snapshot3d("triclinic_p_001_01.png", fmt="png", width=500, height=500, webshot = FALSE)
-  dp_demo(system.file("triclinic_p.cif", package = "rgl.cry"), zoom = 0.0003, res = 2.0)
-  ##rgl::snapshot3d("triclinic_p_001_02.png", fmt="png", width=500, height=500, webshot = FALSE)
+dp_demo(system.file("triclinic_p.cif", package = "rgl.cry"), zoom = 0.03, res = 2.0)
+##rgl::snapshot3d("triclinic_p_001_01.png", fmt="png", width=500, height=500, webshot = FALSE)
+dp_demo(system.file("triclinic_p.cif", package = "rgl.cry"), zoom = 0.0003, res = 2.0)
+##rgl::snapshot3d("triclinic_p_001_02.png", fmt="png", width=500, height=500, webshot = FALSE)
 ```
-<div style="margin: 3% 15%; display: flex; flex-wrap: wrap; justify-content: center;">
-<div style="width: 45%; height: 45%;">
+<div class="myfig1">
+<div style="width: 35%; height: 35%;">
 ![triclinic_p_001_01.png](./images/triclinic_p_001_01.png){width=100%}
 </div>
-<div style="width: 10%;"></div>
-<div style="width: 45%; height: 45%;">
+<div style="width: 15%;"></div>
+<div style="width: 35%; height: 35%;">
 ![triclinic_p_001_02.png](./images/triclinic_p_001_02.png){width=100%}
 </div>
-<div style="justify-content: center;">Triclinic crystal.</div>
+<div class="mycap1">Triclinic crystal.</div>
 </div>
-In this case, even in a triclinic lattice, the diffraction spots align with the Kikuchi line when viewed from the [0 0 1] direction (see the zoomed image on the right). However, if the viewing direction is changed to another crystal zone axis, the diffraction spots will deviate from the Kikuchi line. This occurs because the lattice vector and reciprocal lattice vector are not parallel, causing the normal vector of the plane denoted by Miller indices to also not be parallel to its diffraction vector.
-Let's draw the (1 1 0) plane.
+In this case, even in a triclinic lattice, diffraction spots such as (1 1 0) are visible. This is because the corresponding [1 1 0] vector in reciprocal space remains parallel to the xy-plane, even if the real-space [1 1 0] vector is inclined relative to the xy-plane.
+We should not focus on imaging the vector denoted by Miller indices in real space. Instead, we should consider the repetition of planes and their normal direction or alternatively, image a vector in reciprocal space denoted by Miller indices.
+Let's see.
 ```{r, eval=FALSE, echo=TRUE}
 cry_demo()
 align("90 0")
 align("0 50") #
-
-library(pryr)
 
 lCIF <- rgl.cry:::pkg$inst[[nrow(rgl.cry:::pkg$inst), "lCIF"]]
 a <- lCIF$HEADER$CELL$A$VAL
@@ -99,30 +113,30 @@ c <- lCIF$HEADER$CELL$C$VAL
 aa <- lCIF$HEADER$CELL$ALPHA$VAL # degree
 bb <- lCIF$HEADER$CELL$BETA$VAL
 cc <- lCIF$HEADER$CELL$GAMMA$VAL
-mat01 <- cry::xtal_mat02(a, b, c, aa, bb, cc)
+mat02 <- cry::xtal_mat02(a, b, c, aa, bb, cc)
 
 vertices <- rbind(c(1,0,0), c(1,0,1), c(0,1,1), c(0,1,0))
-vertices <- t(apply(vertices, 1, function(v) v %*% mat01))
+vertices <- t(apply(vertices, 1, function(v) v %*% mat02))
 combinations <- c(1,2,3,1, 1,4,3,1)
 rgl::shade3d(rgl::mesh3d(vertices, quads = combinations), col = "blue", alpha = 0.9)
 
 vertices <- rbind(c(1,0,0), c(1,0,1), c(0,1,1), c(0,1,0))
-vertices <- t(apply(vertices, 1, function(v) v + c(1, 0, 0) + c(0, 0, 0)))
-vertices <- t(apply(vertices, 1, function(v) v %*% mat01))
+vertices <- t(apply(vertices, 1, function(v) v + c(1, 1, 0)))
+vertices <- t(apply(vertices, 1, function(v) v %*% mat02))
 rgl::shade3d(rgl::mesh3d(vertices, quads = combinations), col = "green", alpha = 0.9)
-##rgl::snapshot3d("triclinic_p.png", fmt="png", width=500, height=500, webshot = FALSE)
 ```
-We can observe that the repetition of (1 1 0) planes appears inclined in real space. However, in reciprocal space, this repetition lies parallel to the xy-plane when first displayed.
+This is the side view of the image looking down along with c-axis indicated above as dp pattern.
+We can observe that the direction [1 1 0] inclined in real space.
+However, as the repetition of planes, this lies parallel to the xy-plane.
 
-<div style="margin: 3% 15%; display: flex; flex-wrap: wrap; justify-content: center;">
+<span style="color:#d14">IMPORTANT:  Adding 3D graphics objects is made easy and flexible within R using the rgl and cry packages.</span>
+<div class="myfig1">
 ```{r}
 null <- cry_demo(system.file("triclinic_p.cif", package = "rgl.cry"))
 align("90 0")
 align("0 55.27") #
 rgl::par3d(zoom=1.0)
 
-library(pryr)
-
 lCIF <- rgl.cry:::pkg$inst[[nrow(rgl.cry:::pkg$inst), "lCIF"]]
 a <- lCIF$HEADER$CELL$A$VAL
 b <- lCIF$HEADER$CELL$B$VAL
@@ -130,15 +144,15 @@ c <- lCIF$HEADER$CELL$C$VAL
 aa <- lCIF$HEADER$CELL$ALPHA$VAL # degree
 bb <- lCIF$HEADER$CELL$BETA$VAL
 cc <- lCIF$HEADER$CELL$GAMMA$VAL
-mat01 <- cry::xtal_mat02(a, b, c, aa, bb, cc)
+mat02 <- cry::xtal_mat02(a, b, c, aa, bb, cc)
 vertices <- rbind(c(1,0,0), c(1,0,1), c(0,1,1), c(0,1,0))
-vertices <- t(apply(vertices, 1, function(v) v %*% mat01))
+vertices <- t(apply(vertices, 1, function(v) v %*% mat02))
 combinations <- c(1,2,3,1, 1,4,3,1)
 rgl::shade3d(rgl::mesh3d(vertices, quads = combinations), col = "blue", alpha = 0.9)
 
 vertices <- rbind(c(1,0,0), c(1,0,1), c(0,1,1), c(0,1,0))
 vertices <- t(apply(vertices, 1, function(v) v + c(1, 1, 0)))
-vertices <- t(apply(vertices, 1, function(v) v %*% mat01))
+vertices <- t(apply(vertices, 1, function(v) v %*% mat02))
 rgl::shade3d(rgl::mesh3d(vertices, quads = combinations), col = "green", alpha = 0.9)
 
 cry.panel.id <- subsceneInfo()$id
@@ -146,44 +160,39 @@ cry.widget.id <- subsceneInfo()$parent
 useSubscene3d(cry.widget.id)
 cry.root.id <- subsceneInfo()$parent
 useSubscene3d(cry.panel.id)
+cry.scene3d <- scene3d(minimal = FALSE)
 
 js3 <- readLines("cb_cry.js")
-js3 <- sub("%subidPanel%", cry.panel.id, js3)
-js3 <- sub("%subidWidget%", cry.widget.id, js3)
-js3 <- sub("%subidRoot%", cry.root.id, js3)
+js3 <- sub("%cryPanel%", cry.panel.id, js3)
+js3 <- sub("%cryWidget%", cry.widget.id, js3)
+js3 <- sub("%cryRoot%", cry.root.id, js3)
 js3 <- sub("%begin%", "begin3", js3)
 js3 <- sub("%update%", "update3", js3)
 js3 <- sub("%end%", "end3", js3)
+js3 <- sub("%.*%", "null", js3)
 
 scene3 <- setUserCallbacks("left",
   begin = "begin3",
   update = "update3",
   end = "end3",
-  scene = scene3d(minimal = FALSE),
+  scene = cry.scene3d,
   subscene = cry.panel.id,
   applyToScene = TRUE,
   applyToDev = FALSE,
   javascript = js3
 )
 
-rglwidget(scene3, width = 0.45 * figWidth(), height = 0.45 * figWidth())
+rglwidget(scene3, width = 0.35*figWidth(), height = 0.35*figWidth())
 ```
 </div>
 
 
 Let's check this numerically.
 ```{r, eval=FALSE, echo=TRUE}
-> lCIF <- rgl.cry:::pkg$inst[[nrow(rgl.cry:::pkg$inst), "lCIF"]]
-> a <- lCIF$HEADER$CELL$A$VAL
-> b <- lCIF$HEADER$CELL$B$VAL
-> c <- lCIF$HEADER$CELL$C$VAL
-> aa <- lCIF$HEADER$CELL$ALPHA$VAL # degree
-> bb <- lCIF$HEADER$CELL$BETA$VAL
-> cc <- lCIF$HEADER$CELL$GAMMA$VAL
-> mat01 <- cry::xtal_mat02(a, b, c, aa, bb, cc)
-> ea1 <- as.numeric(c(1, 0, 0) %*% mat01)
-> ea2 <- as.numeric(c(0, 1, 0) %*% mat01)
-> ea3 <- as.numeric(c(0, 0, 1) %*% mat01)
+> mat02 <- cry::xtal_mat02(a, b, c, aa, bb, cc)
+> ea1 <- as.numeric(c(1, 0, 0) %*% mat02)
+> ea2 <- as.numeric(c(0, 1, 0) %*% mat02)
+> ea3 <- as.numeric(c(0, 0, 1) %*% mat02)
 
 > library(pracma)
 > V <- as.numeric(ea1 %*% cross(ea2, ea3))
@@ -191,14 +200,43 @@ Let's check this numerically.
 > eb2 <- cross(ea3, ea1) / V
 > eb3 <- cross(ea1, ea2) / V
 
-## [1 1 0] in real space.
+## The [1 1 0] vector in real space and its corresponding coordinates in the Cartesian system.
 > 1*ea1 + 1*ea2 + 0*ea3
 [1] 6.554986 9.455095 5.356230
 
-## [1 1 0] in reciprocal space. z = 0
+## The [1 1 0] vector in reciprocal space and its corresponding coordinates in the Cartesian system.
 > 1*eb1 + 1*eb2 + 0*eb3
 [1] 0.1020649 0.1407670 0.0000000
 ```
+In reciprocal space, the vector denoted by Miller indices is perpendicular to the plane in real space with the same Miller indices.
+
+You may be confused if you are asked to calculate the interplanar spacing in a triclinic lattice. Don't worry, it's easy when using reciprocal lattice vectors.
+```{r, eval=FALSE, echo=TRUE}
+## The interplanar spacing of the (1 1 0) planes in this crystal is 1/0.1738753 Å.
+> hkl[which(hkl$H=="1" & hkl$K=="1" & hkl$L=="0"),]
+     H K L         S
+ 124 1 1 0 0.1738753
+
+> 1 / 0.1738753
+[1] 5.751248
+
+> n110b <- (1*eb1 + 1*eb2 + 0*eb3)
+> norm(n110b, "2")
+[1] 0.1738753
+
+
+## On the other hand,
+> n110a <- (1*ea1 + 1*ea2 + 0*ea3) * c(1, 1, 0)
+> norm(n110a, "2")
+[1] 11.50507
+
+> norm(n110a, "2") / 2
+[1] 5.752536
+
+## Although the calculated value may initially appear plausible after being halved,
+## this approach, using the lattice vector of real space, is fundamentally flawed and unproductive.
+```
+
 
 
 <!-- ------------------------------ -->
@@ -237,15 +275,15 @@ img <- image_negate(img)
 image_browse(img)
 image_write(img, path = "cubic_i_03bw.png", format = "png")
 ```
-<div style="margin: 3% 15%; display: flex; flex-wrap: wrap; justify-content: center;">
-<div style="width: 45%; height: 45%;">
+<div class="myfig1">
+<div style="width: 35%; height: 35%;">
 ![Saved image cubic_i_03bw.png.](./images/cubic_i_03.png){width=100%}
 </div>
-<div style="width: 10%;"></div>
-<div style="width: 45%; height: 45%;">
+<div style="width: 15%;"></div>
+<div style="width: 35%; height: 35%;">
 ![Converted image cubic_i_03bw.png.](./images/cubic_i_03bw.png){width=100%}
 </div>
-<div style="justify-content: center;">The original image and the image after applying the effect.</div>
+<div class="mycap1">The original image and the image after applying the effect.</div>
 </div>
 
 Reconstruct the line from Hough transform data and overlay it onto the original image.
@@ -264,8 +302,11 @@ plot(im)
 nfline(df$theta, df$rho, col="blue")
 ##dev.off()
 ```
-<div style="margin: 3% 30%; display: flex; flex-wrap: wrap; justify-content: space-around;">
-![The original image with lines detected using the Hough transform overlaid.](./images/cubic_i_03ovl.png){width=100%}
+<div class="myfig1">
+<div style="width: 45%; height: 45%;">
+![](./images/cubic_i_03ovl.png){width=100%}
+</div>
+<div class="mycap1">The original image with lines detected using the Hough transform overlaid.</div>
 </div>
 
 To improve the visual representation of Hough transform data, I used the following settings:
@@ -282,13 +323,16 @@ ggplot(data = df) +
       plot.background = element_rect(fill = "white"))
 ##dev.off()
 ```
-<div style="margin: 3% 30%; display: flex; flex-wrap: wrap; justify-content: space-around;">
-![cubic_i_03ht.png.](./images/cubic_i_03ht.png){width=100%}
+<div class="myfig1">
+<div style="width: 45%; height: 45%;">
+![](./images/cubic_i_03ht.png){width=100%}
+</div>
+<div class="mycap1">cubic_i_03ht.png.</div>
 </div>
 
 
 We detect lines in the image using Hough transform and keep only the highest-scoring 1-0.9991 %.
-Check this.
+Let's check this.
 ```{r, eval=FALSE, echo=TRUE}
 > plot(im)
 > nfline(df$theta, df$rho, col="blue")
@@ -337,11 +381,21 @@ ggplot(data = df4) +
       panel.grid.minor = element_blank(),
       plot.background = element_rect(fill = "white"))
 ##dev.off()
+```
+<div class="myfig1">
+<div style="width: 35%; height: 35%;">
+![cubic_i_04ovl.png.](./images/cubic_i_04ovl.png){width=100%}
+</div>
+<div style="width: 15%;"></div>
+<div style="width: 35%; height: 35%;">
+![cubic_i_04ht.png.](./images/cubic_i_04ht.png){width=100%}
+</div>
+<div class="mycap1">The major peak selection and its result.</div>
+</div>
+The four major lines (\\, /, |, -) in the image on the left share identical slope and Y-intercept. This characteristic corresponds to the existence of 4 major spots in the image on the right.
 
-## The four major lines share identical slope and Y-intercept. This
-## characteristic corresponds to the existence of 4 major spots.
-
-## This does not lead to further improvement:
+And this does not lead to further improvement:
+```{r, eval=FALSE, echo=TRUE}
 ## Treating a horizontal raster row (theta).
 data_vector_theta <- df[order(df[, "rho"], df[, "theta"]), "score"]
 peak_indices_theta <- findpeaks(data_vector_rho, minpeakheight = 2.5, threshold = 0.5)
@@ -352,13 +406,150 @@ df5 <- df[nrho * row_coords + col_coords,]
 ## Or even further, multiply by the vertical result?
 ```
 
-<div style="margin: 3% 5%; display: flex; flex-wrap: wrap; justify-content: center;">
-<div style="width: 45%; height: 45%;">
-![cubic_i_04ht.png.](./images/cubic_i_04ht.png){width=100%}
-</div>
-<div style="width: 10%;"></div>
-<div style="width: 45%; height: 45%;">
-![cubic_i_04ovl.png.](./images/cubic_i_04ovl.png){width=100%}
-</div>
-<div style="justify-content: center;">The major peak selection and its result.</div>
-</div>
+<!-- ------------------------------ -->
+
+<script>
+  window.addEventListener("load", function () {
+
+      const widgets = document.getElementsByClassName("rglWebGL html-widget");
+
+      for (const item of widgets) {
+        root = item.rglinstance.scene.rootSubscene;
+        if (root == window.cryRoot) {
+          window.cryObj = item.rglinstance
+        }
+        else if (root == window.dpRoot) {
+          window.dpObj = item.rglinstance
+        }
+      }
+
+  });
+</script>
+
+<!--
+
+install.packages(c("devtools", "pracma", "rgl"))
+library(devtools)
+devtools::install_github("SaitouToshihide/cry", type="source", ref="2df5dcc")
+devtools::install_github("SaitouToshihide/rgl.cry", type="source", ref="a2bb42f")
+
+library(rgl.cry)
+dp_demo(system.file("triclinic_p.cif", package = "rgl.cry"), zoom = 0.03, res = 2.0)
+
+lCIF <- rgl.cry:::pkg$inst[[nrow(rgl.cry:::pkg$inst), "lCIF"]]
+a <- lCIF$HEADER$CELL$A$VAL
+b <- lCIF$HEADER$CELL$B$VAL
+c <- lCIF$HEADER$CELL$C$VAL
+aa <- lCIF$HEADER$CELL$ALPHA$VAL # degree
+bb <- lCIF$HEADER$CELL$BETA$VAL
+cc <- lCIF$HEADER$CELL$GAMMA$VAL
+mat02 <- cry::xtal_mat02(a, b, c, aa, bb, cc)
+ea1 <- as.numeric(c(1, 0, 0) %*% mat02)
+ea2 <- as.numeric(c(0, 1, 0) %*% mat02)
+ea3 <- as.numeric(c(0, 0, 1) %*% mat02)
+
+library(pracma)
+V <- as.numeric(ea1 %*% cross(ea2, ea3))
+eb1 <- cross(ea2, ea3) / V
+eb2 <- cross(ea3, ea1) / V
+eb3 <- cross(ea1, ea2) / V
+
+hkl <- rgl.cry:::pkg$inst[[nrow(rgl.cry:::pkg$inst), "hkl"]]
+
+
+## Use variable name mat02 since we use xtal_mat02
+## Renaming mat01 to mat02 to reflect its origin from xtal_mat02().
+
+## ------------------------------------------------------------ 1 1 0
+
+## The interplanar spacing of the (1 1 0) planes in this crystal is 1/0.1738753 Å.
+> hkl[which(hkl$H=="1" & hkl$K=="1" & hkl$L=="0"),]
+     H K L         S
+ 124 1 1 0 0.1738753
+
+## Using the reciprocal lattice, it can be calculated as the norm (Euclidean norm).
+> dist(rbind(c(0, 0, 0), 1*eb1 + 1*eb2 + 0*eb3))
+          1
+2 0.1738753
+
+> norm(as.matrix(c(6.554986, 9.455095, 0)), "2")
+[1] 11.50507
+
+> norm(as.matrix(c(6.554986, 9.455095, 0)), "2") / 2
+[1] 5.752536
+
+
+
+
+## In this example, the transformation from fractional coordinates to orthogonal
+## coordinates utilizes option 1 of the frac_to_orth() function. Thus ``X axis
+## along a; Y axis normal to a, in the (a,b) plane; Z axis normal to X and Y
+## (and therefore parallel to c*).''
+
+> cry_demo()
+
+## In this image, the c-axis is perpendicular to the screen (xy-plane), while
+## the plane defined by vectors a and b is not parallel to the xy-plane.
+   
+
+> align("90 0")
+> align("0 55")
+
+## Like this you can see ab-plane lies to the xy-plane, so [1 1 0] lies, in reciprocal space [1 1 0] is paralled to the xy-plane and doesn't lean.
+## As displayed, the ab-plane is tilt with respect to the xy-plane, and consequently, the vector [1 1 0] also exhibits tilt. However, in reciprocal space, [1 1 0] lies parallel to the xy-plane and does not exhibit any tilt.
+
+
+
+
+## [1 1 0] in real space.
+> 1*ea1 + 1*ea2 + 0*ea3
+[1] 6.554986 9.455095 5.356230
+
+## [1 1 0] in reciprocal space. z = 0
+> 1*eb1 + 1*eb2 + 0*eb3
+[1] 0.1020649 0.1407670 0.0000000
+
+## このため[0 0 1]方向から見たとき (1 1 0) の逆格子点は見える．
+## 面が繰り返しを想像すれば違和感はない．
+
+## この三斜晶の他の晶帯軸方向からみた場合
+
+
+
+
+## ------------------------------------------------------------ 1 1 1
+> hkl[which(hkl$H=="1" & hkl$K=="1" & hkl$L=="1"),]
+    H K L         S
+158 1 1 1 0.1621819
+
+> test <- 1*eb1 + 1*eb2 + 1*eb3
+> dist(rbind(c(0, 0, 0), test))
+              
+test 0.1621819
+
+
+
+
+
+
+
+
+## [1 1 0] in reciprocal space. z = 0
+test <- 1*eb1 + 1*eb2 + 0*eb3
+dist(test)
+
+
+
+
+## [1 1 0] in real space.
+> 1*ea1 + 1*ea2 + 0*ea3
+[1] 6.554986 9.455095 5.356230
+
+## [1 1 0] in reciprocal space. z = 0
+> 1*eb1 + 1*eb2 + 0*eb3
+[1] 0.1020649 0.1407670 0.0000000
+
+
+
+
+-->
