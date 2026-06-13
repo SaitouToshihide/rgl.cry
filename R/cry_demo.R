@@ -50,7 +50,6 @@
 #'   cry_demo(system.file("rhombohedral_r.cif", package = "rgl.cry"))
 #'
 #'   ## Extract crystal structure data from the internal processing of the package.
-#'   library(pryr)
 #'   lCIF <- rgl.cry:::pkg$inst[[nrow(rgl.cry:::pkg$inst), "lCIF"]]
 #'   a <- lCIF$HEADER$CELL$A$VAL
 #'   b <- lCIF$HEADER$CELL$B$VAL

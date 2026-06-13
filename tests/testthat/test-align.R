@@ -1,6 +1,5 @@
 ##
 
-## library(pryr)
 ## library(rgl.cry)
 ## sys.source(path, new.env(parent = globalenv()), chdir = TRUE)
 

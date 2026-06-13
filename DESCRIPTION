@@ -27,7 +27,6 @@ Collate:
     'select.R'
     'rgl.cry-package.R'
 Suggests: 
-    pryr,
     knitr,
     rmarkdown,
     spelling,
