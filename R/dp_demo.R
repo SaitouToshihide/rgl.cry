@@ -270,6 +270,7 @@ dp_demo <- function(file = NULL, reso = 1.2, ews.r = 40, zoom = 0.5, hkl_labels 
   ## Lorentz–polarization correction factor.
   lp <- function(th) {
     (1 + cos(2 * th)^2) / (sin(th)^2 * cos(th))
+    ##(1 + 1 * (cos(2*th))^2) / ((1 + 1)*2*(sin(th)^2 * cos(th)))
   }
 
   StrFac <- NULL # structure factor
@@ -296,8 +297,9 @@ dp_demo <- function(file = NULL, reso = 1.2, ews.r = 40, zoom = 0.5, hkl_labels 
       }))
     }
 
-    f <- abs(f)
-    StrFac[j] <- ifelse(f < 1e-6, 0, f)
+    ##f <- abs(f)
+    ####StrFac[j] <- ifelse(f < 1e-6, 0, f)
+    StrFac[j] <- f
   }
 
   pdp <- data.frame(
@@ -305,6 +307,8 @@ dp_demo <- function(file = NULL, reso = 1.2, ews.r = 40, zoom = 0.5, hkl_labels 
     k = hkl$K,
     l = hkl$L,
     d = 1 / hkl$S,
+    realF = Re(StrFac),
+    imagF = Im(StrFac),
     absF = abs(StrFac),
     lp = lp(asin(0.7709167 * hkl$S)), # Assuming the use of Cu Kα 1.541833
     twotheta = asin(0.7709167 * hkl$S) * 360 / pi
@@ -505,6 +509,9 @@ dp_demo <- function(file = NULL, reso = 1.2, ews.r = 40, zoom = 0.5, hkl_labels 
   rgl::text3d(eb1 * 1.1, texts = "a*", cex = 1, col = "lightpink")
   rgl::text3d(eb2 * 1.1, texts = "b*", cex = 1, col = "lightpink")
   rgl::text3d(eb3 * 1.1, texts = "c*", cex = 1, col = "lightpink")
+
+  ## If widget is disabled, remove its shapes from this scene.
+  if (!widget) rgl::clear3d(type = "shapes")
 
 
   ## ------------------------------------------------------------
