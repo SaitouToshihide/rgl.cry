@@ -28,6 +28,8 @@
 #' @param zoom A positive value indicating the current scene magnification.
 #' @param hkl_labels A logical value indecating whether to show or hide the hkl
 #' index labels.  Defaults to `TRUE`.
+#' @param widget A logical value indecating whether to show or hide the widget.
+#' Defaults to `TRUE`.
 #' @param xrd A logical value indicating whether to create an X-ray diffraction
 #' pattern simulation result file.
 #'
@@ -46,9 +48,9 @@
 #'  dp_demo("https://www.crystallography.net/cod/foo.cif")
 #' }
 #' }
-dp_demo <- function(file = NULL, reso = 1.2, ews.r = 40, zoom = 0.5, hkl_labels = TRUE, xrd = FALSE) {
+dp_demo <- function(file = NULL, reso = 1.2, ews.r = 40, zoom = 0.5, hkl_labels = TRUE, widget = TRUE, xrd = FALSE) {
 
-  list(file = file, reso = reso, ews.r = ews.r, zoom = zoom, hkl_labels = hkl_labels, xrd = xrd)
+  list(file = file, reso = reso, ews.r = ews.r, zoom = zoom, hkl_labels = hkl_labels, widget = widget, xrd = xrd)
 
   ## File or lCIF object to use.
   if (!is.null(file)) {
