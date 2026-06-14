@@ -19,5 +19,10 @@ Useful links:
 \author{
 \strong{Maintainer}: Toshihide Saitou \email{saitou.toshihide@gmail.com} [copyright holder]
 
+Authors:
+\itemize{
+  \item Toshihide Saitou \email{saitou.toshihide@gmail.com} [copyright holder]
+}
+
 }
 \keyword{internal}

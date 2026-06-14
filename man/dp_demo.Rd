@@ -10,6 +10,7 @@ dp_demo(
   ews.r = 40,
   zoom = 0.5,
   hkl_labels = TRUE,
+  widget = TRUE,
   xrd = FALSE
 )
 }
@@ -27,6 +28,9 @@ value.}
 
 \item{hkl_labels}{A logical value indecating whether to show or hide the hkl
 index labels.  Defaults to \code{TRUE}.}
+
+\item{widget}{A logical value indecating whether to show or hide the widget.
+Defaults to \code{TRUE}.}
 
 \item{xrd}{A logical value indicating whether to create an X-ray diffraction
 pattern simulation result file.}
